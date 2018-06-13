@@ -409,7 +409,7 @@ try
                             $xmlContent += ("$($tab[6])" + "<Sku>" + "$($ARMImage[2])" + "</Sku>`n")
                             $xmlContent += ("$($tab[6])" + "<Version>" + "$($ARMImage[3])" + "</Version>`n")
                         $xmlContent += ("$($tab[5])" + "</ARMImage>`n")
-                        $xmlContent += ("$($tab[5])" + "<OsVHD>" + "$OsVHD" + "</OsVHD>`n")
+                        $xmlContent += ("$($tab[5])" + "<OsVHD><![CDATA[" + "$OsVHD" + "]]></OsVHD>`n")
                     $xmlContent += ("$($tab[4])" + "</Distro>`n")
                     $xmlContent += ("$($tab[4])" + "<UserName>" + "$($GlobalConfiguration.Global.Azure.TestCredentials.LinuxUsername)" + "</UserName>`n")
                     $xmlContent += ("$($tab[4])" + "<Password>" + "$($GlobalConfiguration.Global.Azure.TestCredentials.LinuxPassword)" + "</Password>`n")

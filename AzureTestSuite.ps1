@@ -42,7 +42,7 @@ Function RunTestsOnCycle ($cycleName , $xmlConfig, $Distro, $TestIterations )
 				}
 				if ( $tempDistro.OsVHD )
 				{
-					$BaseOsVHD = $tempDistro.OsVHD.Trim()
+					$BaseOsVHD = $tempDistro.OsVHD.InnerText.Trim()
 					Set-Variable -Name BaseOsVHD -Value $BaseOsVHD -Scope Global
 					LogMsg "Base VHD name - $BaseOsVHD"
 				}
@@ -79,10 +79,18 @@ Function RunTestsOnCycle ($cycleName , $xmlConfig, $Distro, $TestIterations )
 			LogMsg "Your test VHD is not in target storage account ($ARMStorageAccount)."
 			LogMsg "Your VHD will be copied to $ARMStorageAccount now."
 			$sourceContainer =  $BaseOsVHD.Split("/")[$BaseOsVHD.Split("/").Count - 2]
-			$vhdName =  $BaseOsVHD.Split("/")[$BaseOsVHD.Split("/").Count - 1]
+			$vhdName = $BaseOsVHD.split('?')[0].split('/')[-1]
 			if ($ARMStorageAccount -inotmatch "NewStorage_")
 			{
-				$copyStatus = CopyVHDToAnotherStorageAccount -sourceStorageAccount $givenVHDStorageAccount -sourceStorageContainer $sourceContainer -destinationStorageAccount $ARMStorageAccount -destinationStorageContainer "vhds" -vhdName $vhdName
+				#check if the BaseOsVHD is a SasUrl
+				if(($BaseOsVHD -imatch 'sp=') -and ($BaseOsVHD -imatch 'sig='))
+				{
+					$copyStatus = CopyVHDToAnotherStorageAccount -SasUrl $BaseOsVHD -destinationStorageAccount $ARMStorageAccount -destinationStorageContainer "vhds" -vhdName $vhdName -UseSasUrl				
+				}
+				else
+				{
+					$copyStatus = CopyVHDToAnotherStorageAccount -sourceStorageAccount $givenVHDStorageAccount -sourceStorageContainer $sourceContainer -destinationStorageAccount $ARMStorageAccount -destinationStorageContainer "vhds" -vhdName $vhdName				
+				}
 				if (!$copyStatus)
 				{
 					Throw "Failed to copy the VHD to $ARMStorageAccount"
