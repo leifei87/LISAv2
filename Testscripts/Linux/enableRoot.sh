@@ -14,7 +14,8 @@ sshd_configFilePath="/etc/ssh/sshd_config"
 sshdServiceName="sshd"
 usermod --password $(echo $password | openssl passwd -1 -stdin) root
 if [ $? == 0 ]; then
-    sed -i 's/.*PermitRootLogin.*/PermitRootLogin yes/g' $sshd_configFilePath
+    sed -i '/PermitRootLogin/d' $sshd_configFilePath
+    sed -i '$a\PermitRootLogin yes' $sshd_configFilePath
     if [ $? == 0 ]; then
         echo "$sshd_configFilePath verifed for root login."
         echo "ROOT_PASSWRD_SET"
