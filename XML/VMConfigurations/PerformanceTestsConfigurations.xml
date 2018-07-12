@@ -421,7 +421,7 @@
                 </EndPoints>
                 <DataDisk>
                     <LUN>0</LUN>
-                    <DiskSizeInGB>20</DiskSizeInGB>
+                    <DiskSizeInGB>5</DiskSizeInGB>
                     <HostCaching>None</HostCaching>
                 </DataDisk>
             </VirtualMachine>
@@ -443,22 +443,22 @@
                 </EndPoints>
                 <DataDisk>
                     <LUN>0</LUN>
-                    <DiskSizeInGB>20</DiskSizeInGB>
+                    <DiskSizeInGB>5</DiskSizeInGB>
                     <HostCaching>None</HostCaching>
                 </DataDisk>
                 <DataDisk>
                     <LUN>1</LUN>
-                    <DiskSizeInGB>20</DiskSizeInGB>
+                    <DiskSizeInGB>5</DiskSizeInGB>
                     <HostCaching>None</HostCaching>
                 </DataDisk>
                 <DataDisk>
                     <LUN>2</LUN>
-                    <DiskSizeInGB>20</DiskSizeInGB>
+                    <DiskSizeInGB>5</DiskSizeInGB>
                     <HostCaching>None</HostCaching>
                 </DataDisk>
                 <DataDisk>
                     <LUN>3</LUN>
-                    <DiskSizeInGB>20</DiskSizeInGB>
+                    <DiskSizeInGB>5</DiskSizeInGB>
                     <HostCaching>None</HostCaching>
                 </DataDisk>
             </VirtualMachine>
