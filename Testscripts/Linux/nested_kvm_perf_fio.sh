@@ -306,7 +306,7 @@ CreateLVM()
 
 MountDisk()
 {
-	time mkfs -t $1 -F ${disk}
+	time mkfs -t $1 -F /dev/${disk}
 	mkdir ${mountDir}
 	sleep 1
 	mount -o nobarrier /dev/${disk} ${mountDir}
