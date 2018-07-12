@@ -46,7 +46,7 @@
     <test>
         <TestName>NESTED-KVM-STORAGE-SINGLE-DISK</TestName>
         <testScript>nested_kvm_storage_perf.sh</testScript>
-        <PowershellScript>NESTED-KVM-STORAGE-SINGLE-DISK.ps1</PowershellScript>
+        <PowershellScript>NESTED-KVM-STORAGE-PERF.ps1</PowershellScript>
         <files>.\Testscripts\Linux\azuremodules.sh,.\Testscripts\Linux\nested_kvm_storage_perf.sh,.\Testscripts\Linux\nested_kvm_perf_fio.sh,.\Testscripts\Linux\enableRoot.sh,.\Testscripts\Linux\enablePasswordLessRoot.sh</files>
         <setupType>NESTEDDISK1</setupType>
         <OverrideVMSize></OverrideVMSize>
@@ -76,7 +76,7 @@
     <test>
         <TestName>AZURE-NESTED-KVM-STORAGE-MULTIDISK-RAID0</TestName>
         <testScript>nested_kvm_storage_perf.sh</testScript>
-        <PowershellScript>NESTED-KVM-STORAGE-SINGLE-DISK.ps1</PowershellScript>
+        <PowershellScript>NESTED-KVM-STORAGE-PERF.ps1</PowershellScript>
         <files>.\Testscripts\Linux\azuremodules.sh,.\Testscripts\Linux\nested_kvm_storage_perf.sh,.\Testscripts\Linux\nested_kvm_perf_fio.sh,.\Testscripts\Linux\enableRoot.sh,.\Testscripts\Linux\enablePasswordLessRoot.sh</files>
         <setupType>D32SV3DISK12</setupType>
         <OverrideVMSize></OverrideVMSize>
@@ -106,7 +106,7 @@
     <test>
         <TestName>HYPERV-NESTED-KVM-STORAGE-MULTIDISK-RAID0</TestName>
         <testScript>nested_kvm_storage_perf.sh</testScript>
-        <PowershellScript>NESTED-KVM-STORAGE-SINGLE-DISK.ps1</PowershellScript>
+        <PowershellScript>NESTED-KVM-STORAGE-PERF.ps1</PowershellScript>
         <files>.\Testscripts\Linux\azuremodules.sh,.\Testscripts\Linux\nested_kvm_storage_perf.sh,.\Testscripts\Linux\nested_kvm_perf_fio.sh,.\Testscripts\Linux\enableRoot.sh,.\Testscripts\Linux\enablePasswordLessRoot.sh</files>
         <setupType>NESTEDDISK4</setupType>
         <OverrideVMSize></OverrideVMSize>
