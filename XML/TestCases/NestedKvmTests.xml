@@ -52,12 +52,11 @@
         <OverrideVMSize></OverrideVMSize>
         <TestParameters>
             <!--The nested image should be qcow2 format, and accessible from a public URL-->
-            <param>NestedImageUrl=https://lizstoragesoutheastasia.blob.core.windows.net/nested/nested-ubuntu-4.13.0-45-generic.qcow2</param>
+            <param>NestedImageUrl=NESTED_IMAGE_URL</param>
+            <param>NestedUser=NESTED_VM_USER</param>
+            <param>NestedUserPassword='NESTED_VM_PASSWORD'</param>
             <param>NestedCpuNum=8</param>
             <param>NestedMemMB=8192</param>
-            <param>NestedDataDisks=1</param>
-            <param>NestedUser=nesteduser</param>
-            <param>NestedUserPassword='P@ssw0rd'</param>
             <param>HostFwdPort=60022</param>
             <param>modes='randread randwrite read write'</param>
             <param>startThread=1</param>
@@ -83,12 +82,11 @@
         <OverrideVMSize></OverrideVMSize>
         <TestParameters>
             <!--The nested image should be qcow2 format, and accessible from a public URL-->
-            <param>NestedImageUrl=https://lizstoragesoutheastasia.blob.core.windows.net/nested/nested-ubuntu-4.13.0-45-generic.qcow2</param>            
+            <param>NestedImageUrl=NESTED_IMAGE_URL</param>
+            <param>NestedUser=NESTED_VM_USER</param>
+            <param>NestedUserPassword='NESTED_VM_PASSWORD'</param>
             <param>NestedCpuNum=8</param>
             <param>NestedMemMB=8192</param>
-            <param>NestedDataDisks=1</param>
-            <param>NestedUser=nesteduser</param>
-            <param>NestedUserPassword='P@ssw0rd'</param>
             <param>HostFwdPort=60022</param>
             <param>modes='randread randwrite read write'</param>
             <param>startThread=1</param>
@@ -114,12 +112,11 @@
         <OverrideVMSize></OverrideVMSize>
         <TestParameters>
             <!--The nested image should be qcow2 format, and accessible from a public URL-->
-            <param>NestedImageUrl=https://lizstoragesoutheastasia.blob.core.windows.net/nested/nested-ubuntu-4.13.0-45-generic.qcow2</param>            
+            <param>NestedImageUrl=NESTED_IMAGE_URL</param>
+            <param>NestedUser=NESTED_VM_USER</param>
+            <param>NestedUserPassword='NESTED_VM_PASSWORD'</param>
             <param>NestedCpuNum=8</param>
             <param>NestedMemMB=8192</param>
-            <param>NestedDataDisks=1</param>
-            <param>NestedUser=nesteduser</param>
-            <param>NestedUserPassword='P@ssw0rd'</param>
             <param>HostFwdPort=60022</param>
             <param>modes='randread randwrite read write'</param>
             <param>startThread=1</param>
