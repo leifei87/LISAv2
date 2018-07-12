@@ -140,6 +140,11 @@ Function CreateAllHyperVGroupDeployments($setupType, $xmlConfig, $Distro, [strin
                             $DeploymentElapsedTime = $DeploymentEndTime - $DeploymentStartTime
                             if ( $VMCreationStatus )
                             {
+                                if($TestArea -eq 'Nested')
+                                {
+                                    LogMsg "Test Platform is HyperV and Test Area is $TestArea, need to enable nested virtualization"
+                                    $status = EnableHyperVnestedVirtualization -HyperVGroupName $HyperVGroupName
+                                }
                                 $StartVMStatus = StartHyperVGroupVMs -HyperVGroupName $HyperVGroupName
                                 if ($StartVMStatus)
                                 {
@@ -358,11 +363,22 @@ Function CreateHyperVGroupDeployment([string]$HyperVGroup, $HyperVGroupNameXML)
                     $Out = Set-VM -VM $NewVM -ProcessorCount $CurrentVMCpu -StaticMemory  -CheckpointType Disabled -Notes "$HyperVGroupName"
                     LogMsg "Add-VMGroupMember -Name $HyperVGroupName -VM $($NewVM.Name)"
                     $Out = Add-VMGroupMember -Name "$HyperVGroupName" -VM $NewVM -ComputerName $HyperVHost
-                    $ResourceDiskPath = ".\Temp\ResourceDisk-$((Get-Date).Ticks)-sdb.vhd"
-                    LogMsg "New-VHD -Path $ResourceDiskPath -SizeBytes 1GB -Dynamic -Verbose -ComputerName $HyperVHost"
-                    $VHD = New-VHD -Path $ResourceDiskPath -SizeBytes 1GB -Dynamic -Verbose -ComputerName $HyperVHost
-                    LogMsg "Add-VMHardDiskDrive -ControllerType SCSI -Path $ResourceDiskPath -VM $($NewVM.Name)"
-                    $NewVM | Add-VMHardDiskDrive -ControllerType SCSI -Path $ResourceDiskPath
+                    foreach ( $dataDisk in $VirtualMachine.DataDisk )
+                    {
+                        if ( $dataDisk.LUN -ge 0 )
+                        {
+                            $ControllerType = 'SCSI'
+                            $ControllerNumber = 0
+                            $ControllerLocation = $dataDisk.LUN
+                            $DiskSize = [int]($dataDisk.DiskSizeInGB) * 1024 * 1024 * 1024
+                            $DiskName = 'datadisk' + $ControllerLocation + '-' + $CurrentVMName + '.vhd'
+                            $VHDPath = ".\Temp\$DiskName"
+                            LogMsg "Create a virtual hard disk $VHDPath with fixed size $($dataDisk.DiskSizeInGB) GB"
+                            New-VHD -Fixed -Path $VHDPath -SizeBytes $DiskSize -ComputerName $HyperVHost
+                            LogMsg "Add a virtual hard disk $VHDPath to $ControllerType controller number $ControllerNumber Location $ControllerLocation on virtual machine $CurrentVMName."
+                            $NewVM | Add-VMHardDiskDrive -ControllerType $ControllerType -ControllerNumber $ControllerNumber -ControllerLocation $ControllerLocation -Path $VHDPath
+                        }
+                    }
                 }
                 else 
                 {
@@ -394,6 +410,38 @@ Function CreateHyperVGroupDeployment([string]$HyperVGroup, $HyperVGroupNameXML)
     }
     return $ReturnValue
 }
+
+Function EnableHyperVnestedVirtualization($HyperVGroupName)
+{
+    $AllVMs = Get-VMGroup -Name $HyperVGroupName
+    $CurrentErrors = @()
+    foreach ( $VM in $AllVMs.VMMembers)
+    {
+        LogMsg "Enable nested virtualization for $($VM.Name) from $HyperVGroupName..."
+        Set-VMProcessor -VMName $($VM.Name) -ExposeVirtualizationExtensions $true -ComputerName $HyperVHost
+        Set-VMNetworkAdapter -VMName $($VM.Name) -MacAddressSpoofing on -ComputerName $HyperVHost
+        if ( $? )
+        {
+            LogMsg "Succeeded."
+        }
+        else
+        {
+            LogErr "Failed"
+            $CurrentErrors += "Enable nested virtualization for $($VM.Name) from $HyperVGroupName failed."
+        }
+    }
+    if($CurrentErrors.Count -eq 0)
+    {
+        $ReturnValue = $true
+        $CurrentErrors | ForEach-Object { LogErr "$_" }
+    }
+    else 
+    {
+        $ReturnValue = $false    
+    }
+    return $ReturnValue
+}
+
 Function StartHyperVGroupVMs($HyperVGroupName)
 {
     $HyperVHost = $xmlConfig.config.Hyperv.Host.ServerName

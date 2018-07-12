@@ -43,4 +43,97 @@
         <Tags>nested,kvm</Tags>
         <TestID>Nested_002</TestID>
     </test>
+    <test>
+        <TestName>NESTED-KVM-STORAGE-SINGLE-DISK</TestName>
+        <testScript>nested_kvm_storage_perf.sh</testScript>
+        <PowershellScript>NESTED-KVM-STORAGE-SINGLE-DISK.ps1</PowershellScript>
+        <files>.\Testscripts\Linux\azuremodules.sh,.\Testscripts\Linux\nested_kvm_storage_perf.sh,.\Testscripts\Linux\nested_kvm_perf_fio.sh,.\Testscripts\Linux\enableRoot.sh,.\Testscripts\Linux\enablePasswordLessRoot.sh</files>
+        <setupType>NESTEDDISK1</setupType>
+        <OverrideVMSize></OverrideVMSize>
+        <TestParameters>
+            <!--The nested image should be qcow2 format, and accessible from a public URL-->
+            <param>NestedImageUrl=https://lizstoragesoutheastasia.blob.core.windows.net/nested/nested-ubuntu-4.13.0-45-generic.qcow2</param>
+            <param>NestedCpuNum=8</param>
+            <param>NestedMemMB=8192</param>
+            <param>NestedDataDisks=1</param>
+            <param>NestedUser=nesteduser</param>
+            <param>NestedUserPassword='P@ssw0rd'</param>
+            <param>HostFwdPort=60022</param>
+            <param>modes='randread randwrite read write'</param>
+            <param>startThread=1</param>
+            <param>maxThread=1024</param>
+            <param>startIO=4</param>
+            <param>numjobs=1</param>
+            <param>ioruntime=300</param>
+            <param>maxIO=4</param>
+            <param>fileSize=1G</param>
+        </TestParameters>
+        <Platform>Azure,HyperV</Platform>
+        <Category>Performance</Category>
+        <Area>Nested</Area>
+        <Tags>nested,kvm</Tags>
+        <TestID>Nested_003</TestID>
+    </test>
+    <test>
+        <TestName>AZURE-NESTED-KVM-STORAGE-MULTIDISK-RAID0</TestName>
+        <testScript>nested_kvm_storage_perf.sh</testScript>
+        <PowershellScript>NESTED-KVM-STORAGE-SINGLE-DISK.ps1</PowershellScript>
+        <files>.\Testscripts\Linux\azuremodules.sh,.\Testscripts\Linux\nested_kvm_storage_perf.sh,.\Testscripts\Linux\nested_kvm_perf_fio.sh,.\Testscripts\Linux\enableRoot.sh,.\Testscripts\Linux\enablePasswordLessRoot.sh</files>
+        <setupType>D32SV3DISK12</setupType>
+        <OverrideVMSize></OverrideVMSize>
+        <TestParameters>
+            <!--The nested image should be qcow2 format, and accessible from a public URL-->
+            <param>NestedImageUrl=https://lizstoragesoutheastasia.blob.core.windows.net/nested/nested-ubuntu-4.13.0-45-generic.qcow2</param>            
+            <param>NestedCpuNum=8</param>
+            <param>NestedMemMB=8192</param>
+            <param>NestedDataDisks=1</param>
+            <param>NestedUser=nesteduser</param>
+            <param>NestedUserPassword='P@ssw0rd'</param>
+            <param>HostFwdPort=60022</param>
+            <param>modes='randread randwrite read write'</param>
+            <param>startThread=1</param>
+            <param>maxThread=1024</param>
+            <param>startIO=4</param>
+            <param>numjobs=1</param>
+            <param>ioruntime=300</param>
+            <param>maxIO=4</param>
+            <param>fileSize=1G</param>
+        </TestParameters>
+        <Platform>Azure</Platform>
+        <Category>Performance</Category>
+        <Area>Nested</Area>
+        <Tags>nested,kvm</Tags>
+        <TestID>Nested_004</TestID>
+    </test>
+    <test>
+        <TestName>HYPERV-NESTED-KVM-STORAGE-MULTIDISK-RAID0</TestName>
+        <testScript>nested_kvm_storage_perf.sh</testScript>
+        <PowershellScript>NESTED-KVM-STORAGE-SINGLE-DISK.ps1</PowershellScript>
+        <files>.\Testscripts\Linux\azuremodules.sh,.\Testscripts\Linux\nested_kvm_storage_perf.sh,.\Testscripts\Linux\nested_kvm_perf_fio.sh,.\Testscripts\Linux\enableRoot.sh,.\Testscripts\Linux\enablePasswordLessRoot.sh</files>
+        <setupType>NESTEDDISK4</setupType>
+        <OverrideVMSize></OverrideVMSize>
+        <TestParameters>
+            <!--The nested image should be qcow2 format, and accessible from a public URL-->
+            <param>NestedImageUrl=https://lizstoragesoutheastasia.blob.core.windows.net/nested/nested-ubuntu-4.13.0-45-generic.qcow2</param>            
+            <param>NestedCpuNum=8</param>
+            <param>NestedMemMB=8192</param>
+            <param>NestedDataDisks=1</param>
+            <param>NestedUser=nesteduser</param>
+            <param>NestedUserPassword='P@ssw0rd'</param>
+            <param>HostFwdPort=60022</param>
+            <param>modes='randread randwrite read write'</param>
+            <param>startThread=1</param>
+            <param>maxThread=1024</param>
+            <param>startIO=4</param>
+            <param>numjobs=1</param>
+            <param>ioruntime=300</param>
+            <param>maxIO=4</param>
+            <param>fileSize=1G</param>
+        </TestParameters>
+        <Platform>HyperV</Platform>
+        <Category>Performance</Category>
+        <Area>Nested</Area>
+        <Tags>nested,kvm</Tags>
+        <TestID>Nested_005</TestID>
+    </test>
 </TestCases>
