@@ -314,9 +314,10 @@ Function CreateHyperVGroupDeployment([string]$HyperVGroup, $HyperVGroupNameXML)
     $HyperVHost = $xmlConfig.config.Hyperv.Host.ServerName
     $HyperVMappedSizes = [xml](Get-Content .\XML\AzureVMSizeToHyperVMapping.xml)
     $CreatedVMs =  @()
-    #$OsVHD =  "SS-RHEL75-TEST-VHD-DYNAMIC.vhd"
     $OsVHD = $BaseOsVHD
-    $VMSwitches = Get-VMSwitch  * | Where { $_.Name -imatch "Ext" }
+    $InterfaceAliasWithInternet = (Get-NetIPConfiguration | where {$_.NetProfile.Name -ne 'Unidentified network'}).InterfaceAlias
+    $VMSwitches = Get-VMSwitch | where {$InterfaceAliasWithInternet -match $_.Name}
+    #$VMSwitches = Get-VMSwitch  * | Where { $_.Name -imatch "Ext" }
     $ErrorCount = 0
     $SourceOsVHDPath = $xmlConfig.config.Hyperv.Host.SourceOsVHDPath
     $DestinationOsVHDPath = $xmlConfig.config.Hyperv.Host.DestinationOsVHDPath
@@ -363,20 +364,27 @@ Function CreateHyperVGroupDeployment([string]$HyperVGroup, $HyperVGroupNameXML)
                     $Out = Set-VM -VM $NewVM -ProcessorCount $CurrentVMCpu -StaticMemory  -CheckpointType Disabled -Notes "$HyperVGroupName"
                     LogMsg "Add-VMGroupMember -Name $HyperVGroupName -VM $($NewVM.Name)"
                     $Out = Add-VMGroupMember -Name "$HyperVGroupName" -VM $NewVM -ComputerName $HyperVHost
-                    foreach ( $dataDisk in $VirtualMachine.DataDisk )
+                    $LUNs = $VirtualMachine.DataDisk.LUN
+                    if($LUNs.count -gt 0)
                     {
-                        if ( $dataDisk.LUN -ge 0 )
+                        LogMsg "check the offline physical disks on host $HyperVHost"
+                        $DiskNumbers = (Get-Disk | where {$_.OperationalStatus -eq 'offline'}).Number
+                        if($DiskNumbers.count -ge $LUNs.count)
                         {
+                            LogMsg "The offline physical disks are enough for use"
                             $ControllerType = 'SCSI'
-                            $ControllerNumber = 0
-                            $ControllerLocation = $dataDisk.LUN
-                            $DiskSize = [int]($dataDisk.DiskSizeInGB) * 1024 * 1024 * 1024
-                            $DiskName = 'datadisk' + $ControllerLocation + '-' + $CurrentVMName + '.vhd'
-                            $VHDPath = ".\Temp\$DiskName"
-                            LogMsg "Create a virtual hard disk $VHDPath with fixed size $($dataDisk.DiskSizeInGB) GB"
-                            New-VHD -Fixed -Path $VHDPath -SizeBytes $DiskSize -ComputerName $HyperVHost
-                            LogMsg "Add a virtual hard disk $VHDPath to $ControllerType controller number $ControllerNumber Location $ControllerLocation on virtual machine $CurrentVMName."
-                            $NewVM | Add-VMHardDiskDrive -ControllerType $ControllerType -ControllerNumber $ControllerNumber -ControllerLocation $ControllerLocation -Path $VHDPath
+                            $count = 0
+                            foreach ( $LUN in $LUNs )
+                            {
+                                LogMsg "Add physical disk $($DiskNumbers[$count]) to $ControllerType controller on virtual machine $CurrentVMName."
+                                $NewVM | Add-VMHardDiskDrive -DiskNumber $($DiskNumbers[$count]) -ControllerType $ControllerType
+                                $count ++
+                            }
+                        }
+                        else
+                        {
+                            LogErr "The offline physical disks are not enough for use"
+                            $ErrorCount += 1
                         }
                     }
                 }

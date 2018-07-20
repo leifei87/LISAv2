@@ -24,17 +24,9 @@ if ($isDeployed)
 			{
 				$maxThread = [int]($param.Replace("maxThread=",""))
 			}
-			if ( $param -imatch "NestedUser=" )
+			if ( $param -imatch "RaidOption" )
 			{
-				$NestedUser = $param.Replace("NestedUser=","")
-			}
-			if ( $param -imatch "NestedUserPassword" )
-			{
-				$NestedUserPassword = $param.Replace("NestedUserPassword=","")
-			}
-			if ( $param -imatch "HostFwdPort" )
-			{
-				$nestedKVMSSHPort = [int]($param.Replace("HostFwdPort=",""))
+				$RaidOption = $param.Replace("RaidOption=","").Replace("'","")
 			}
 		}
 		Add-Content -Value "platform=$TestPlatform" -Path $constantsFile
@@ -102,6 +94,7 @@ chmod 666 /root/perf_fio.csv
 		$CurrentTestResult.TestSummary += CreateResultSummary -testResult $testResult -metaData "" -checkValues "PASS,FAIL,ABORTED" -testName $currentTestData.testName		
         if ($testResult -imatch "PASS")
         {
+			Remove-Item "$LogDir\*.csv" -Force
 			$remoteFiles = "FIOTest-*.tar.gz,perf_fio.csv,nested_properties.csv,VM_properties.csv,runlog.txt"
 			RemoteCopy -downloadFrom $testVMData.PublicIP -port $testVMData.SSHPort -username $user -password $password -download -downloadTo $LogDir -files "$remoteFiles"
 			try
@@ -198,7 +191,7 @@ chmod 666 /root/perf_fio.csv
 						}
 						$connectionString = "Server=$dataSource;uid=$DBuser; pwd=$DBpassword;Database=$database;Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30;"
 						
-						$SQLQuery = "INSERT INTO $dataTableName (TestCaseName,TestDate,HostType,HostBy,HostOS,L1GuestOSType,L1GuestDistro,L1GuestSize,L1GuestKernelVersion,L2GuestDistro,L2GuestKernelVersion,L2GuestCpuNum,L2GuestMemMB,DiskSetup,BlockSize_KB,QDepth,seq_read_iops,seq_read_lat_usec,rand_read_iops,rand_read_lat_usec,seq_write_iops,seq_write_lat_usec,rand_write_iops,rand_write_lat_usec) VALUES "
+						$SQLQuery = "INSERT INTO $dataTableName (TestCaseName,TestDate,HostType,HostBy,HostOS,L1GuestOSType,L1GuestDistro,L1GuestSize,L1GuestKernelVersion,L2GuestDistro,L2GuestKernelVersion,L2GuestCpuNum,L2GuestMemMB,DiskSetup,RaidOption,BlockSize_KB,QDepth,seq_read_iops,seq_read_lat_usec,rand_read_iops,rand_read_lat_usec,seq_write_iops,seq_write_lat_usec,rand_write_iops,rand_write_lat_usec) VALUES "
 
 						for ( $QDepth = $startThread; $QDepth -le $maxThread; $QDepth *= 2 ) 
 						{
@@ -216,7 +209,7 @@ chmod 666 /root/perf_fio.csv
 
 							$BlockSize_KB= [Int]((($fioDataCsv |  where { $_.Threads -eq "$QDepth"} | Select BlockSize)[0].BlockSize).Replace("K",""))
 							
-							$SQLQuery += "('$TestCaseName','$(Get-Date -Format yyyy-MM-dd)','$HostType','$HostBy','$HostOS','$L1GuestOSType','$L1GuestDistro','$L1GuestSize','$L1GuestKernelVersion','$L2GuestDistro','$L2GuestKernelVersion','$L2GuestCpuNum','$L2GuestMemMB','$DiskSetup','$BlockSize_KB','$QDepth','$seq_read_iops','$seq_read_lat_usec','$rand_read_iops','$rand_read_lat_usec','$seq_write_iops','$seq_write_lat_usec','$rand_write_iops','$rand_write_lat_usec'),"	
+							$SQLQuery += "('$TestCaseName','$(Get-Date -Format yyyy-MM-dd)','$HostType','$HostBy','$HostOS','$L1GuestOSType','$L1GuestDistro','$L1GuestSize','$L1GuestKernelVersion','$L2GuestDistro','$L2GuestKernelVersion','$L2GuestCpuNum','$L2GuestMemMB','$DiskSetup','$RaidOption','$BlockSize_KB','$QDepth','$seq_read_iops','$seq_read_lat_usec','$rand_read_iops','$rand_read_lat_usec','$seq_write_iops','$seq_write_lat_usec','$rand_write_iops','$rand_write_lat_usec'),"	
 							LogMsg "Collected performace data for $QDepth QDepth."
 						}
 

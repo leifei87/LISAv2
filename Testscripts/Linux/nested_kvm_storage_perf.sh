@@ -70,6 +70,14 @@ if [ -z "$NestedMemMB" ]; then
         echo "Please mention -NestedMemMB next"
         exit 1
 fi
+if [ -z "$platform" ]; then
+        echo "Please mention -platform next"
+        exit 1
+fi
+if [ -z "$RaidOption" ]; then
+        echo "Please mention -RaidOption next"
+        exit 1
+fi
 if [ -z "$logFolder" ]; then
         logFolder="."
         echo "-logFolder is not mentioned. Using ."
@@ -134,15 +142,41 @@ GetImageFiles()
     fi
 }
 
+CreateRAID0()
+{	
+    LogMsg "INFO: Check and remove RAID first"
+    mdvol=$(cat /proc/mdstat | grep "active raid" | awk {'print $1'})
+    if [ -n "$mdvol" ]; then
+        echo "/dev/${mdvol} already exist...removing first"
+        umount /dev/${mdvol}
+        mdadm --stop /dev/${mdvol}
+        mdadm --remove /dev/${mdvol}
+        mdadm --zero-superblock /dev/${devices}[1-5]
+    fi
+	
+    LogMsg "INFO: Creating Partitions"
+    count=0
+    for disk in ${disks}
+    do		
+        echo "formatting disk /dev/${disk}"
+        (echo d; echo n; echo p; echo 1; echo; echo; echo t; echo fd; echo w;) | fdisk /dev/${disk}
+        count=$(( $count + 1 ))
+        sleep 1
+    done
+    LogMsg "INFO: Creating RAID of ${count} devices."
+    mdadm --create ${mdVolume} --level 0 --raid-devices ${count} /dev/${devices}[1-5]
+    if [ $? -ne 0 ]; then
+        LogMsg "Error: Unable to create raid"            
+        exit 1
+    else
+        LogMsg "Create raid successfully."
+    fi
+}
+
 StartNestedVM()
 {
     LogMsg "Start the nested VM: $ImageName"
     cmd="qemu-system-x86_64 -machine pc-i440fx-2.0,accel=kvm -smp $NestedCpuNum -m $NestedMemMB -hda $ImageName -display none -device e1000,netdev=user.0 -netdev user,id=user.0,hostfwd=tcp::$HostFwdPort-:22 -enable-kvm -daemonize"
-    if [[ $platform == 'HyperV' ]]; then 
-        disks=$(ls -l /dev | grep sd[b-z]$ | awk '{print $10}')
-    else
-        disks=$(ls -l /dev | grep sd[c-z]$ | awk '{print $10}')
-    fi
     for disk in ${disks}
     do
         LogMsg "add disk /dev/${disk} to nested VM"
@@ -188,7 +222,7 @@ StartNestedVM()
         UpdateTestState $ICA_TESTFAILED
         exit 0
     fi
-    remote_exec -host localhost -user root -passwd $NestedUserPassword -port $HostFwdPort "cp /home/$NestedUser/*.sh /root"
+    remote_exec -host localhost -user root -passwd $NestedUserPassword -port $HostFwdPort "cp /home/$NestedUser/*.sh /root"	
 }
 
 RebootNestedVM()
@@ -252,6 +286,21 @@ StopNestedVMs()
         kill -9 $pid
     fi
 }
+
+
+if [[ $platform == 'HyperV' ]]; then
+    devices='sd[b-z]'
+else
+    devices='sd[c-z]'
+fi
+
+disks=$(ls -l /dev | grep ${devices}$ | awk '{print $10}')
+
+if [[ $RaidOption == 'RAID in L1' ]]; then
+	mdVolume="/dev/md0"
+	CreateRAID0
+	disks='md0'
+fi
 
 UpdateTestState $ICA_TESTRUNNING
 InstallDependencies

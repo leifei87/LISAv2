@@ -115,7 +115,6 @@ InstallFIO() {
 RunFIO()
 {
 	UpdateTestState $ICA_TESTRUNNING
-	FILEIO="--size=${fileSize} --direct=1 --ioengine=libaio --filename=fiodata --overwrite=1  "
 
 	####################################
 	#All run config set here
@@ -264,8 +263,8 @@ CreateRAID0()
 	sleep 1
 	mount -o nobarrier ${mdVolume} ${mountDir}
 	if [ $? -ne 0 ]; then
-            LogMsg "Error: Unable to create raid"            
-            exit 1
+		LogMsg "Error: Unable to create raid"            
+		exit 1
 	else
 		LogMsg "${mdVolume} mounted to ${mountDir} successfully."
 	fi
@@ -346,12 +345,28 @@ if [ ${#disks[@]} -eq 1 ]; then
 	disk=${disks[0]}
 	MountDisk ext4
 else
-	CreateRAID0 ext4
+	if [[ $RaidOption == 'RAID in L2' ]]; then
+		CreateRAID0 ext4
+	fi
 fi
 
 #Run test from here
 LogMsg "*********INFO: Starting test execution*********"
-cd ${mountDir}
-mkdir sampleDIR
+if [[ $RaidOption == 'No RAID' && ${#disks[@]} -gt 1 ]]; then
+	filename=''
+	for disk in ${disks[@]}
+	do
+		if [[ $filename == '' ]]; then
+			filename="/dev/${disk}"
+		else
+			filename="${filename}:/dev/${disk}"
+		fi
+	done
+	FILEIO="--size=${fileSize} --direct=1 --ioengine=libaio --filename=${filename} --overwrite=1  "
+else
+	FILEIO="--size=${fileSize} --direct=1 --ioengine=libaio --filename=fiodata --overwrite=1  "
+	cd ${mountDir}
+	mkdir sampleDIR
+fi
 RunFIO
 LogMsg "*********INFO: Script execution reach END. Completed !!!*********"
