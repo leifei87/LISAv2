@@ -1,4 +1,5 @@
 param(
+    [string]$TestName= "",
     [string]$NestedImageUrl= "",
     [string]$NestedUser= "",
     [string]$NestedUserPassword= "",
@@ -12,7 +13,7 @@ foreach ( $file in $TestXMLs.FullName)
 	$TestXmlConfig = [xml]( Get-Content -Path $file)
 	foreach ( $test in $TestXmlConfig.TestCases.test )
 	{
-		if ( $test.Area -eq 'Nested' )
+		if ( $test.Area -eq 'Nested' -and $test.TestName -eq $TestName )
 		{
 			Write-Host "Update test parameters for case $($test.TestName)"
 			foreach ($param in $test.TestParameters.ChildNodes)
