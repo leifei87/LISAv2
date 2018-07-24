@@ -841,4 +841,8 @@
         <NumberOfCores>16</NumberOfCores>
         <MemoryInMB>114688</MemoryInMB>
     </Standard_A11>
+    <HyperV_16Cores16GMem>
+        <NumberOfCores>16</NumberOfCores>
+        <MemoryInMB>16384</MemoryInMB>
+    </HyperV_16Cores16GMem>
 </HyperV>

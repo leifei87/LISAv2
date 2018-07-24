@@ -44,7 +44,38 @@
         <TestID>Nested_002</TestID>
     </test>
     <test>
-        <TestName>NESTED-KVM-STORAGE-SINGLE-DISK</TestName>
+        <TestName>HYPERV-NESTED-KVM-STORAGE-SINGLE-DISK</TestName>
+        <testScript>nested_kvm_storage_perf.sh</testScript>
+        <PowershellScript>NESTED-KVM-STORAGE-PERF.ps1</PowershellScript>
+        <files>.\Testscripts\Linux\azuremodules.sh,.\Testscripts\Linux\nested_kvm_storage_perf.sh,.\Testscripts\Linux\nested_kvm_perf_fio.sh,.\Testscripts\Linux\enableRoot.sh,.\Testscripts\Linux\enablePasswordLessRoot.sh</files>
+        <setupType>HYPERVDISK1</setupType>
+        <OverrideVMSize></OverrideVMSize>
+        <TestParameters>
+            <!--The nested image should be qcow2 format, and accessible from a public URL-->
+            <param>NestedImageUrl=NESTED_IMAGE_URL</param>
+            <param>NestedUser=NESTED_VM_USER</param>
+            <param>NestedUserPassword='NESTED_VM_PASSWORD'</param>
+            <param>NestedCpuNum=8</param>
+            <param>NestedMemMB=8192</param>
+            <param>HostFwdPort=60022</param>
+            <param>RaidOption='No RAID'</param>
+            <param>modes='randread randwrite read write'</param>
+            <param>startThread=1</param>
+            <param>maxThread=1024</param>
+            <param>startIO=4</param>
+            <param>numjobs=1</param>
+            <param>ioruntime=300</param>
+            <param>maxIO=4</param>
+            <param>fileSize=1G</param>
+        </TestParameters>
+        <Platform>HyperV</Platform>
+        <Category>Performance</Category>
+        <Area>Nested</Area>
+        <Tags>nested,kvm</Tags>
+        <TestID>Nested_003</TestID>
+    </test>
+    <test>
+        <TestName>AZURE-NESTED-KVM-STORAGE-SINGLE-DISK</TestName>
         <testScript>nested_kvm_storage_perf.sh</testScript>
         <PowershellScript>NESTED-KVM-STORAGE-PERF.ps1</PowershellScript>
         <files>.\Testscripts\Linux\azuremodules.sh,.\Testscripts\Linux\nested_kvm_storage_perf.sh,.\Testscripts\Linux\nested_kvm_perf_fio.sh,.\Testscripts\Linux\enableRoot.sh,.\Testscripts\Linux\enablePasswordLessRoot.sh</files>
@@ -68,11 +99,43 @@
             <param>maxIO=4</param>
             <param>fileSize=1G</param>
         </TestParameters>
-        <Platform>Azure,HyperV</Platform>
+        <Platform>Azure</Platform>
         <Category>Performance</Category>
         <Area>Nested</Area>
         <Tags>nested,kvm</Tags>
-        <TestID>Nested_003</TestID>
+        <TestID>Nested_004</TestID>
+    </test>
+    <test>
+        <TestName>HYPERV-NESTED-KVM-STORAGE-MULTIDISK</TestName>
+        <testScript>nested_kvm_storage_perf.sh</testScript>
+        <PowershellScript>NESTED-KVM-STORAGE-PERF.ps1</PowershellScript>
+        <files>.\Testscripts\Linux\azuremodules.sh,.\Testscripts\Linux\nested_kvm_storage_perf.sh,.\Testscripts\Linux\nested_kvm_perf_fio.sh,.\Testscripts\Linux\enableRoot.sh,.\Testscripts\Linux\enablePasswordLessRoot.sh</files>
+        <setupType>HYPERVDISK4</setupType>
+        <OverrideVMSize></OverrideVMSize>
+        <TestParameters>
+            <!--The nested image should be qcow2 format, and accessible from a public URL-->
+            <param>NestedImageUrl=NESTED_IMAGE_URL</param>
+            <param>NestedUser=NESTED_VM_USER</param>
+            <param>NestedUserPassword='NESTED_VM_PASSWORD'</param>
+            <param>NestedCpuNum=8</param>
+            <param>NestedMemMB=8192</param>
+            <param>HostFwdPort=60022</param>
+            <!--The raid option allowed values: 'No RAID','RAID in L1','RAID in L2'-->
+            <param>RaidOption='RAID_OPTION'</param>
+            <param>modes='randread randwrite read write'</param>
+            <param>startThread=1</param>
+            <param>maxThread=1024</param>
+            <param>startIO=4</param>
+            <param>numjobs=1</param>
+            <param>ioruntime=300</param>
+            <param>maxIO=4</param>
+            <param>fileSize=1G</param>
+        </TestParameters>
+        <Platform>HyperV</Platform>
+        <Category>Performance</Category>
+        <Area>Nested</Area>
+        <Tags>nested,kvm</Tags>
+        <TestID>Nested_005</TestID>
     </test>
     <test>
         <TestName>AZURE-NESTED-KVM-STORAGE-MULTIDISK</TestName>
@@ -104,6 +167,6 @@
         <Category>Performance</Category>
         <Area>Nested</Area>
         <Tags>nested,kvm</Tags>
-        <TestID>Nested_004</TestID>
+        <TestID>Nested_006</TestID>
     </test>
 </TestCases>

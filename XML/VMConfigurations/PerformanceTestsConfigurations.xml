@@ -405,6 +405,55 @@
             </VirtualMachine>            
         </ResourceGroup>
     </DS14DISK12NFS>        
+    <HYPERVDISK1>
+        <isDeployed>NO</isDeployed>
+        <ResourceGroup>
+            <VirtualMachine>
+                <state></state>
+                <InstanceSize>HyperV_16Cores16GMem</InstanceSize>
+                <ARMInstanceSize>HyperV_16Cores16GMem</ARMInstanceSize>
+                <RoleName></RoleName>
+                <EndPoints>
+                    <Name>SSH</Name>
+                    <Protocol>tcp</Protocol>
+                    <LocalPort>22</LocalPort>
+                    <PublicPort>22</PublicPort>
+                </EndPoints>
+                <DataDisk>
+                    <LUN>0</LUN>
+                </DataDisk>
+            </VirtualMachine>
+        </ResourceGroup>
+    </HYPERVDISK1> 
+    <HYPERVDISK4>
+        <isDeployed>NO</isDeployed>
+        <ResourceGroup>
+            <VirtualMachine>
+                <state></state>
+                <InstanceSize>HyperV_16Cores16GMem</InstanceSize>
+                <ARMInstanceSize>HyperV_16Cores16GMem</ARMInstanceSize>
+                <RoleName></RoleName>
+                <EndPoints>
+                    <Name>SSH</Name>
+                    <Protocol>tcp</Protocol>
+                    <LocalPort>22</LocalPort>
+                    <PublicPort>22</PublicPort>
+                </EndPoints>
+                <DataDisk>
+                    <LUN>0</LUN>
+                </DataDisk>
+                <DataDisk>
+                    <LUN>1</LUN>
+                </DataDisk>
+                <DataDisk>
+                    <LUN>2</LUN>
+                </DataDisk>
+                <DataDisk>
+                    <LUN>3</LUN>
+                </DataDisk>
+            </VirtualMachine>
+        </ResourceGroup>
+    </HYPERVDISK4> 
     <D16SV3DISK1>
         <isDeployed>NO</isDeployed>
         <ResourceGroup>
