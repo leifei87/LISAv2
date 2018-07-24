@@ -305,6 +305,13 @@ CreateLVM()
 
 MountDisk()
 {
+	LogMsg "INFO: Check and remove RAID first"
+	mdvol=$(cat /proc/mdstat | grep md | awk -F: '{ print $1 }')
+	if [ -n "$mdvol" ]; then
+		echo "/dev/${mdvol} already exist...removing first"
+		mdadm --stop /dev/${mdvol}
+		mdadm --remove /dev/${mdvol}
+	fi
 	time mkfs -t $1 -F /dev/${disk}
 	mkdir ${mountDir}
 	sleep 1
