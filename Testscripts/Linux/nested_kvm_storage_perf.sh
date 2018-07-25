@@ -164,7 +164,7 @@ CreateRAID0()
         sleep 1
     done
     LogMsg "INFO: Creating RAID of ${count} devices."
-    mdadm --create ${mdVolume} --level 0 --raid-devices ${count} /dev/${devices}[1-5]
+    yes | mdadm --create ${mdVolume} --level 0 --raid-devices ${count} /dev/${devices}[1-5]
     if [ $? -ne 0 ]; then
         LogMsg "Error: Unable to create raid"            
         exit 1

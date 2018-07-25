@@ -256,7 +256,7 @@ CreateRAID0()
 	done
 	LogMsg "INFO: Creating RAID of ${count} devices."
 	sleep 1
-	mdadm --create ${mdVolume} --level 0 --raid-devices ${count} /dev/sd[b-z][1-5]
+	yes | mdadm --create ${mdVolume} --level 0 --raid-devices ${count} /dev/sd[b-z][1-5]
 	sleep 1
 	time mkfs -t $1 -F ${mdVolume}
 	mkdir ${mountDir}
