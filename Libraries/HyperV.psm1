@@ -271,8 +271,11 @@ Function DeleteHyperVGroup([string]$HyperVGroupName)
                         $VM = Get-VM -Id $CleanupVM.Id -ComputerName $HyperVHost
                         foreach ($VHD in $CleanupVM.HardDrives)
                         {
-                            Invoke-Command -ComputerName $HyperVHost -ScriptBlock { Remove-Item -Path $args[0] -Force -Verbose } -ArgumentList $VHD.Path
-                            LogMsg "$($VHD.Path) Removed!"
+                            if ( Test-Path -Path $VHD.Path )
+                            {
+                                Invoke-Command -ComputerName $HyperVHost -ScriptBlock { Remove-Item -Path $args[0] -Force -Verbose } -ArgumentList $VHD.Path
+                                LogMsg "$($VHD.Path) Removed!"
+                            }
                         }
                         $CleanupVM | Remove-VM -Force
                         LogMsg "$($CleanupVM.Name) Removed!"
