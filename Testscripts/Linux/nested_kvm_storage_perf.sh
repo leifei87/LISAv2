@@ -127,8 +127,8 @@ GetImageFiles()
     fi
 }
 
-CreateRAID0()
-{	
+RemoveRAID()
+{
     LogMsg "INFO: Check and remove RAID first"
     mdvol=$(cat /proc/mdstat | grep md | awk -F: '{ print $1 }')
     if [ -n "$mdvol" ]; then
@@ -138,11 +138,14 @@ CreateRAID0()
         mdadm --remove /dev/${mdvol}
         mdadm --zero-superblock /dev/${devices}[1-5]
     fi
-	
+}
+
+CreateRAID0()
+{
     LogMsg "INFO: Creating Partitions"
     count=0
     for disk in ${disks}
-    do		
+    do
         echo "formatting disk /dev/${disk}"
         (echo d; echo n; echo p; echo 1; echo; echo; echo t; echo fd; echo w;) | fdisk /dev/${disk}
         count=$(( $count + 1 ))
@@ -272,6 +275,11 @@ StopNestedVMs()
     fi
 }
 
+
+############################################################
+#   Main body
+############################################################
+RemoveRAID
 
 if [[ $platform == 'HyperV' ]]; then
     devices='sd[b-z]'
