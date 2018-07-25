@@ -19,7 +19,7 @@
 HOMEDIR="/root"
 LogMsg()
 {
-    echo "[$(date +"%x %r %Z")] ${1}"
+	echo "[$(date +"%x %r %Z")] ${1}"
 	echo "[$(date +"%x %r %Z")] ${1}" >> "${HOMEDIR}/runlog.txt"
 }
 LogMsg "Sleeping 10 seconds.."
@@ -34,18 +34,18 @@ ICA_TESTFAILED="TestFailed"        # Error occurred during the test
 touch ./fioTest.log
 
 if [ -e ${CONSTANTS_FILE} ]; then
-    . ${CONSTANTS_FILE}
+	. ${CONSTANTS_FILE}
 else
-    errMsg="Error: missing ${CONSTANTS_FILE} file"
-    LogMsg "${errMsg}"
-    UpdateTestState $ICA_TESTABORTED
-    exit 10
+	errMsg="Error: missing ${CONSTANTS_FILE} file"
+	LogMsg "${errMsg}"
+	UpdateTestState $ICA_TESTABORTED
+	exit 10
 fi
 
 
 UpdateTestState()
 {
-    echo "${1}" > $HOMEDIR/state.txt
+	echo "${1}" > $HOMEDIR/state.txt
 }
 
 InstallFIO() {
@@ -128,7 +128,6 @@ RunFIO()
 	mkdir $HOMEDIR/FIOLog/iostatLog
 	mkdir $HOMEDIR/FIOLog/blktraceLog
 
-	#LOGDIR="${HOMEDIR}/FIOLog"
 	JSONFILELOG="${LOGDIR}/jsonLog"
 	IOSTATLOGDIR="${LOGDIR}/iostatLog"
 	BLKTRACELOGDIR="${LOGDIR}/blktraceLog"
@@ -138,23 +137,8 @@ RunFIO()
 	Resource_mount=$(mount -l | grep /sdb1 | awk '{print$3}')
 	blk_base="${Resource_mount}/blk-$(date +"%m%d%Y-%H%M%S")"
 	mkdir $blk_base
-	#
-	#
 	#Test config
-	#
-	#
-
-	#All possible values for file-test-mode are randread randwrite read write
-	#modes='randread randwrite read write'
 	iteration=0
-	#startThread=1
-	#startIO=8
-	#numjobs=1
-
-	#Max run config
-	#ioruntime=300
-	#maxThread=1024
-	#maxIO=8
 	io_increment=128
 
 	####################################
@@ -201,12 +185,6 @@ RunFIO()
 				fi
 				iostatfilename="${IOSTATLOGDIR}/iostat-fio-${testmode}-${io}K-${Thread}td.txt"
 				nohup iostat -x 5 -t -y > $iostatfilename &
-				#capture blktrace output during test
-				#LogMsg "INFO: start blktrace for 40 sec on device sdd and sdf"				
-				#blk_operation="${blk_base}/blktrace-fio-${testmode}-${io}K-${Thread}td/"							
-				#mkdir $blk_operation
-				#blktrace -w 40 -d /dev/sdf -D $blk_operation &
-				#blktrace -w 40 -d /dev/sdm -D $blk_operation &
 				echo "-- iteration ${iteration} ----------------------------- ${testmode} test, ${io}K bs, ${Thread} threads, ${numjobs} jobs, 5 minutes ------------------ $(date +"%x %r %Z") ---" >> $LOGFILE
 				LogMsg "Running ${testmode} test, ${io}K bs, ${Thread} threads ..."
 				jsonfilename="${JSONFILELOG}/fio-result-${testmode}-${io}K-${Thread}td.json"
@@ -234,7 +212,7 @@ RunFIO()
 
 
 CreateRAID0()
-{	
+{
 	disks=$(ls -l /dev | grep sd[b-z]$ | awk '{print $10}')
 	
 	LogMsg "INFO: Check and remove RAID first"
@@ -265,7 +243,7 @@ CreateRAID0()
 	sleep 1
 	mount -o nobarrier ${mdVolume} ${mountDir}
 	if [ $? -ne 0 ]; then
-		LogMsg "Error: Unable to create raid"            
+		LogMsg "Error: Unable to create raid"
 		exit 1
 	else
 		LogMsg "${mdVolume} mounted to ${mountDir} successfully."
@@ -273,7 +251,7 @@ CreateRAID0()
 }
 
 CreateLVM()
-{	
+{
 	disks=$(ls -l /dev | grep sd[c-z]$ | awk '{print $10}')
 	
 	vgExist=$(vgdisplay)
@@ -300,9 +278,9 @@ CreateLVM()
 	mkdir ${mountDir}
 	mount -o nobarrier /dev/${vggroup}/lv1 ${mountDir}
 	if [ $? -ne 0 ]; then
-            LogMsg "Error: Unable to create LVM "            
-            exit 1
-        fi
+		LogMsg "Error: Unable to create LVM "
+		exit 1
+	fi
 }
 
 MountDisk()

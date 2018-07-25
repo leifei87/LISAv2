@@ -282,9 +282,9 @@ fi
 disks=$(ls -l /dev | grep ${devices}$ | awk '{print $10}')
 
 if [[ $RaidOption == 'RAID in L1' ]]; then
-	mdVolume="/dev/md0"
-	CreateRAID0
-	disks='md0'
+    mdVolume="/dev/md0"
+    CreateRAID0
+    disks='md0'
 fi
 
 UpdateTestState $ICA_TESTRUNNING
