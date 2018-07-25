@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the Apache License.
+
 $result = ""
 $CurrentTestResult = CreateTestResultObject
 $resultArr = @()
@@ -54,13 +57,13 @@ cp perf_fio.csv /root
 chmod 666 /root/perf_fio.csv
 "@
 		Set-Content "$LogDir\StartFioTest.sh" $myString
-		Set-Content "$LogDir\ParseFioTestLogs.sh" $myString2		
+		Set-Content "$LogDir\ParseFioTestLogs.sh" $myString2
 		#endregion
 		RemoteCopy -uploadTo $testVMData.PublicIP -port $testVMData.SSHPort -files $currentTestData.files -username $user -password $password -upload
 		RemoteCopy -uploadTo $testVMData.PublicIP -port $testVMData.SSHPort -files "$constantsFile,.\$LogDir\StartFioTest.sh,.\$LogDir\ParseFioTestLogs.sh" -username $user -password $password -upload
 		$out = RunLinuxCmd -ip $testVMData.PublicIP -port $testVMData.SSHPort -username $user -password $password -command "chmod +x *.sh" -runAsSudo
 		LogMsg "Executing : $($currentTestData.testScript)"
-        $testJob = RunLinuxCmd -ip $testVMData.PublicIP -port $testVMData.SSHPort -username $user -password $password -command "./$($currentTestData.testScript) > TestExecutionConsole.log" -runAsSudo -RunInBackground
+		$testJob = RunLinuxCmd -ip $testVMData.PublicIP -port $testVMData.SSHPort -username $user -password $password -command "./$($currentTestData.testScript) > TestExecutionConsole.log" -runAsSudo -RunInBackground
 		#region MONITOR TEST
 		while ( (Get-Job -Id $testJob).State -eq "Running" )
 		{
@@ -91,9 +94,9 @@ chmod 666 /root/perf_fio.csv
 			$testResult = "ABORTED"
 		}		
 		RemoteCopy -downloadFrom $testVMData.PublicIP -port $testVMData.SSHPort -username $user -password $password -download -downloadTo $LogDir -files "fioConsoleLogs.txt"
-		$CurrentTestResult.TestSummary += CreateResultSummary -testResult $testResult -metaData "" -checkValues "PASS,FAIL,ABORTED" -testName $currentTestData.testName		
-        if ($testResult -imatch "PASS")
-        {
+		$CurrentTestResult.TestSummary += CreateResultSummary -testResult $testResult -metaData "" -checkValues "PASS,FAIL,ABORTED" -testName $currentTestData.testName
+		if ($testResult -imatch "PASS")
+		{
 			Remove-Item "$LogDir\*.csv" -Force
 			$remoteFiles = "FIOTest-*.tar.gz,perf_fio.csv,nested_properties.csv,VM_properties.csv,runlog.txt"
 			RemoteCopy -downloadFrom $testVMData.PublicIP -port $testVMData.SSHPort -username $user -password $password -download -downloadTo $LogDir -files "$remoteFiles"
@@ -144,9 +147,9 @@ chmod 666 /root/perf_fio.csv
 					$database = $xmlConfig.config.$TestPlatform.database.dbname
 					$dataTableName = $xmlConfig.config.$TestPlatform.database.dbtable
 					$TestCaseName = $xmlConfig.config.$TestPlatform.database.testTag
-					if ($dataSource -And $DBuser -And $DBpassword -And $database -And $dataTableName) 
+					if ($dataSource -And $DBuser -And $DBpassword -And $database -And $dataTableName)
 					{
-						$GuestDistro	= cat "$LogDir\VM_properties.csv" | Select-String "OS type"| %{$_ -replace ",OS type,",""}
+						$GuestDistro = cat "$LogDir\VM_properties.csv" | Select-String "OS type"| %{$_ -replace ",OS type,",""}
 						$HostType = $TestPlatform
 						if ($TestPlatform -eq "hyperV")
 						{
@@ -158,7 +161,7 @@ chmod 666 /root/perf_fio.csv
 						}
 						else
 						{
-							$HostBy	= ($xmlConfig.config.$TestPlatform.General.Location).Replace('"','')						
+							$HostBy	= ($xmlConfig.config.$TestPlatform.General.Location).Replace('"','')
 							$L1GuestSize = $AllVMData.InstanceSize
 						}
 						$setupType = $currentTestData.setupType
@@ -169,15 +172,15 @@ chmod 666 /root/perf_fio.csv
 							$count ++
 						}
 						$DiskSetup = "$count SSD: $($disk_size)G"
-						$HostOS	= cat "$LogDir\VM_properties.csv" | Select-String "Host Version"| %{$_ -replace ",Host Version,",""}
+						$HostOS = cat "$LogDir\VM_properties.csv" | Select-String "Host Version"| %{$_ -replace ",Host Version,",""}
 						# Get L1 guest info
-						$L1GuestDistro	= cat "$LogDir\VM_properties.csv" | Select-String "OS type"| %{$_ -replace ",OS type,",""}
-						$L1GuestOSType	= "Linux"
-						$L1GuestKernelVersion	= cat "$LogDir\VM_properties.csv" | Select-String "Kernel version"| %{$_ -replace ",Kernel version,",""}
+						$L1GuestDistro = cat "$LogDir\VM_properties.csv" | Select-String "OS type"| %{$_ -replace ",OS type,",""}
+						$L1GuestOSType = "Linux"
+						$L1GuestKernelVersion = cat "$LogDir\VM_properties.csv" | Select-String "Kernel version"| %{$_ -replace ",Kernel version,",""}
 
 						# Get L2 guest info
-						$L2GuestDistro	= cat "$LogDir\nested_properties.csv" | Select-String "OS type"| %{$_ -replace ",OS type,",""}
-						$L2GuestKernelVersion	= cat "$LogDir\nested_properties.csv" | Select-String "Kernel version"| %{$_ -replace ",Kernel version,",""}
+						$L2GuestDistro = cat "$LogDir\nested_properties.csv" | Select-String "OS type"| %{$_ -replace ",OS type,",""}
+						$L2GuestKernelVersion = cat "$LogDir\nested_properties.csv" | Select-String "Kernel version"| %{$_ -replace ",Kernel version,",""}
 						foreach ( $param in $currentTestData.TestParameters.param)
 						{
 							if ($param -match "NestedCpuNum")
@@ -193,7 +196,7 @@ chmod 666 /root/perf_fio.csv
 						
 						$SQLQuery = "INSERT INTO $dataTableName (TestCaseName,TestDate,HostType,HostBy,HostOS,L1GuestOSType,L1GuestDistro,L1GuestSize,L1GuestKernelVersion,L2GuestDistro,L2GuestKernelVersion,L2GuestCpuNum,L2GuestMemMB,DiskSetup,RaidOption,BlockSize_KB,QDepth,seq_read_iops,seq_read_lat_usec,rand_read_iops,rand_read_lat_usec,seq_write_iops,seq_write_lat_usec,rand_write_iops,rand_write_lat_usec) VALUES "
 
-						for ( $QDepth = $startThread; $QDepth -le $maxThread; $QDepth *= 2 ) 
+						for ( $QDepth = $startThread; $QDepth -le $maxThread; $QDepth *= 2 )
 						{
 							$seq_read_iops = [Float](($fioDataCsv |  where { $_.TestType -eq "read" -and  $_.Threads -eq "$QDepth"} | Select ReadIOPS).ReadIOPS)
 							$seq_read_lat_usec = [Float](($fioDataCsv |  where { $_.TestType -eq "read" -and  $_.Threads -eq "$QDepth"} | Select MaxOfReadMeanLatency).MaxOfReadMeanLatency)
@@ -209,7 +212,7 @@ chmod 666 /root/perf_fio.csv
 
 							$BlockSize_KB= [Int]((($fioDataCsv |  where { $_.Threads -eq "$QDepth"} | Select BlockSize)[0].BlockSize).Replace("K",""))
 							
-							$SQLQuery += "('$TestCaseName','$(Get-Date -Format yyyy-MM-dd)','$HostType','$HostBy','$HostOS','$L1GuestOSType','$L1GuestDistro','$L1GuestSize','$L1GuestKernelVersion','$L2GuestDistro','$L2GuestKernelVersion','$L2GuestCpuNum','$L2GuestMemMB','$DiskSetup','$RaidOption','$BlockSize_KB','$QDepth','$seq_read_iops','$seq_read_lat_usec','$rand_read_iops','$rand_read_lat_usec','$seq_write_iops','$seq_write_lat_usec','$rand_write_iops','$rand_write_lat_usec'),"	
+							$SQLQuery += "('$TestCaseName','$(Get-Date -Format yyyy-MM-dd)','$HostType','$HostBy','$HostOS','$L1GuestOSType','$L1GuestDistro','$L1GuestSize','$L1GuestKernelVersion','$L2GuestDistro','$L2GuestKernelVersion','$L2GuestCpuNum','$L2GuestMemMB','$DiskSetup','$RaidOption','$BlockSize_KB','$QDepth','$seq_read_iops','$seq_read_lat_usec','$rand_read_iops','$rand_read_lat_usec','$seq_write_iops','$seq_write_lat_usec','$rand_write_iops','$rand_write_lat_usec'),"
 							LogMsg "Collected performace data for $QDepth QDepth."
 						}
 
@@ -232,7 +235,7 @@ chmod 666 /root/perf_fio.csv
 					}
 				
 				}
-				catch 
+				catch
 				{
 					$ErrorMessage =  $_.Exception.Message
 					LogErr "EXCEPTION : $ErrorMessage"
@@ -242,7 +245,7 @@ chmod 666 /root/perf_fio.csv
 	catch
 	{
 		$ErrorMessage =  $_.Exception.Message
-		LogMsg "EXCEPTION : $ErrorMessage"   
+		LogMsg "EXCEPTION : $ErrorMessage"
 	}
 	Finally
 	{
@@ -252,8 +255,8 @@ chmod 666 /root/perf_fio.csv
 			$testResult = "Aborted"
 		}
 		$resultArr += $testResult
-        LogMsg "Test result : $testResult"
-	}   
+		LogMsg "Test result : $testResult"
+	}
 }
 
 else
