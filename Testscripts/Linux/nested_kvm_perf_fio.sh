@@ -236,7 +236,7 @@ CreateRAID0()
 	disks=$(ls -l /dev | grep sd[b-z]$ | awk '{print $10}')
 	
 	LogMsg "INFO: Check and remove RAID first"
-	mdvol=$(cat /proc/mdstat | grep "active raid" | awk {'print $1'})
+	mdvol=$(cat /proc/mdstat | grep md | awk -F: '{ print $1 }')
 	if [ -n "$mdvol" ]; then
 		echo "/dev/${mdvol} already exist...removing first"
 		umount /dev/${mdvol}
