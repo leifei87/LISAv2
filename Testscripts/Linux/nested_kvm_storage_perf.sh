@@ -136,7 +136,11 @@ RemoveRAID()
         umount /dev/${mdvol}
         mdadm --stop /dev/${mdvol}
         mdadm --remove /dev/${mdvol}
-        mdadm --zero-superblock /dev/${devices}[1-5]
+        for disk in ${disks}
+        do
+            echo "formatting disk /dev/${disk}"
+            mkfs -t ext4 -F /dev/${disk}
+        done
     fi
 }
 
@@ -279,7 +283,6 @@ StopNestedVMs()
 ############################################################
 #   Main body
 ############################################################
-RemoveRAID
 
 if [[ $platform == 'HyperV' ]]; then
     devices='sd[b-z]'
@@ -288,6 +291,7 @@ else
 fi
 
 disks=$(ls -l /dev | grep ${devices}$ | awk '{print $10}')
+RemoveRAID
 
 if [[ $RaidOption == 'RAID in L1' ]]; then
     mdVolume="/dev/md0"
