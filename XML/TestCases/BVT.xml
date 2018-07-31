@@ -195,16 +195,4 @@
         <Tags>bvt</Tags>
         <TestID>AzureBVT_026</TestID>
     </test>
-    <test>
-        <testName>BVT-VERIFY-KVP-DAEMON-STATUS</testName>
-        <testScript></testScript>
-        <PowershellScript>BVT-VERIFY-KVP-DAEMON-STATUS.ps1</PowershellScript>
-        <files></files>
-        <setupType>BVTDeployment</setupType>
-        <Platform>Azure</Platform>
-        <Category>BVT</Category>
-        <Area>BVT</Area>
-        <Tags>bvt</Tags>
-        <TestID>AzureBVT_029</TestID>
-    </test>
 </TestCases>
