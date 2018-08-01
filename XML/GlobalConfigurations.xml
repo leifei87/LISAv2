@@ -23,7 +23,7 @@
     <HyperV>
         <Host>
             <ServerName>localhost</ServerName>
-            <SourceOsVHDPath>\\LIS-PERF08\andy</SourceOsVHDPath>
+            <SourceOsVHDPath></SourceOsVHDPath>
             <DestinationOsVHDPath>temp</DestinationOsVHDPath>
         </Host>
         <ResultsDatabase>
