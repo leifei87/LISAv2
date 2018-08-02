@@ -169,7 +169,7 @@ Function CreateAllHyperVGroupDeployments($setupType, $xmlConfig, $Distro, [strin
                                 if($TestArea -eq 'Nested')
                                 {
                                     LogMsg "Test Platform is HyperV and Test Area is $TestArea, need to enable nested virtualization"
-                                    $status = EnableHyperVnestedVirtualization -HyperVGroupName $HyperVGroupName
+                                    $status = EnableHyperVNestedVirtualization -HyperVGroupName $HyperVGroupName
                                 }
                                 $StartVMStatus = StartHyperVGroupVMs -HyperVGroupName $HyperVGroupName
                                 if ($StartVMStatus)
@@ -448,7 +448,7 @@ Function CreateHyperVGroupDeployment([string]$HyperVGroup, $HyperVGroupNameXML)
     return $ReturnValue
 }
 
-Function EnableHyperVnestedVirtualization($HyperVGroupName)
+Function EnableHyperVNestedVirtualization($HyperVGroupName)
 {
     $AllVMs = Get-VMGroup -Name $HyperVGroupName
     $CurrentErrors = @()

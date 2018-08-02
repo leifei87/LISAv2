@@ -24,7 +24,7 @@
         <Host>
             <ServerName>localhost</ServerName>
             <SourceOsVHDPath></SourceOsVHDPath>
-            <DestinationOsVHDPath>temp</DestinationOsVHDPath>
+            <DestinationOsVHDPath>VHDs_Destination_Path</DestinationOsVHDPath>
         </Host>
         <ResultsDatabase>
             <server></server>
