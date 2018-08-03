@@ -49,68 +49,69 @@ UpdateTestState()
 }
 
 InstallFIO() {
-		DISTRO=`grep -ihs "buntu\|Suse\|Fedora\|Debian\|CentOS\|Red Hat Enterprise Linux\|clear-linux-os" /etc/{issue,*release,*version} /usr/lib/os-release`
+	DISTRO=`grep -ihs "buntu\|Suse\|Fedora\|Debian\|CentOS\|Red Hat Enterprise Linux\|clear-linux-os" /etc/{issue,*release,*version} /usr/lib/os-release`
 
-		if [[ $DISTRO =~ "Ubuntu" ]] || [[ $DISTRO =~ "Debian" ]];
-		then
-			LogMsg "Detected UBUNTU/Debian. Installing required packages"
-			until dpkg --force-all --configure -a; sleep 10; do echo 'Trying again...'; done
-			apt-get update
-			apt-get install -y pciutils gawk mdadm
-			apt-get install -y wget sysstat blktrace bc fio
-			if [ $? -ne 0 ]; then
-				LogMsg "Error: Unable to install fio"
-				exit 1
-			fi
-			mount -t debugfs none /sys/kernel/debug
-							
-		elif [[ $DISTRO =~ "Red Hat Enterprise Linux Server release 6" ]];
-		then
-			LogMsg "Detected RHEL 6.x; Installing required packages"
-			rpm -ivh https://dl.fedoraproject.org/pub/epel/epel-release-latest-6.noarch.rpm
-			yum -y --nogpgcheck install wget sysstat mdadm blktrace libaio fio
-			mount -t debugfs none /sys/kernel/debug
+	if [[ $DISTRO =~ "Ubuntu" ]] || [[ $DISTRO =~ "Debian" ]];
+	then
+		LogMsg "Detected UBUNTU/Debian. Installing required packages"
+		until dpkg --force-all --configure -a; sleep 10; do echo 'Trying again...'; done
+		apt-get update
+		apt-get install -y pciutils gawk mdadm
+		apt-get install -y wget sysstat blktrace bc fio
+		if [ $? -ne 0 ]; then
+			LogMsg "Error: Unable to install fio"
+			UpdateTestState $ICA_TESTABORTED
+			exit 1
+		fi
+		mount -t debugfs none /sys/kernel/debug
+						
+	elif [[ $DISTRO =~ "Red Hat Enterprise Linux Server release 6" ]];
+	then
+		LogMsg "Detected RHEL 6.x; Installing required packages"
+		rpm -ivh https://dl.fedoraproject.org/pub/epel/epel-release-latest-6.noarch.rpm
+		yum -y --nogpgcheck install wget sysstat mdadm blktrace libaio fio
+		mount -t debugfs none /sys/kernel/debug
 
-		elif [[ $DISTRO =~ "Red Hat Enterprise Linux Server release 7" ]];
-		then
-			LogMsg "Detected RHEL 7.x; Installing required packages"
-			rpm -ivh https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
-			yum -y --nogpgcheck install wget sysstat mdadm blktrace libaio fio
-			mount -t debugfs none /sys/kernel/debug
-				
-		elif [[ $DISTRO =~ "CentOS Linux release 6" ]] || [[ $DISTRO =~ "CentOS release 6" ]];
-		then
-			LogMsg "Detected CentOS 6.x; Installing required packages"
-			rpm -ivh https://dl.fedoraproject.org/pub/epel/epel-release-latest-6.noarch.rpm
-			yum -y --nogpgcheck install wget sysstat mdadm blktrace libaio fio
-			mount -t debugfs none /sys/kernel/debug
-				
-		elif [[ $DISTRO =~ "CentOS Linux release 7" ]];
-		then
-			LogMsg "Detected CentOS 7.x; Installing required packages"
-			rpm -ivh https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
-			yum -y --nogpgcheck install wget sysstat mdadm blktrace libaio fio
-			mount -t debugfs none /sys/kernel/debug
+	elif [[ $DISTRO =~ "Red Hat Enterprise Linux Server release 7" ]];
+	then
+		LogMsg "Detected RHEL 7.x; Installing required packages"
+		rpm -ivh https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+		yum -y --nogpgcheck install wget sysstat mdadm blktrace libaio fio
+		mount -t debugfs none /sys/kernel/debug
+			
+	elif [[ $DISTRO =~ "CentOS Linux release 6" ]] || [[ $DISTRO =~ "CentOS release 6" ]];
+	then
+		LogMsg "Detected CentOS 6.x; Installing required packages"
+		rpm -ivh https://dl.fedoraproject.org/pub/epel/epel-release-latest-6.noarch.rpm
+		yum -y --nogpgcheck install wget sysstat mdadm blktrace libaio fio
+		mount -t debugfs none /sys/kernel/debug
+			
+	elif [[ $DISTRO =~ "CentOS Linux release 7" ]];
+	then
+		LogMsg "Detected CentOS 7.x; Installing required packages"
+		rpm -ivh https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+		yum -y --nogpgcheck install wget sysstat mdadm blktrace libaio fio
+		mount -t debugfs none /sys/kernel/debug
 
-		elif [[ $DISTRO =~ "SUSE Linux Enterprise Server 12" ]];
-		then
-			LogMsg "Detected SLES12. Installing required packages"
-			zypper addrepo http://download.opensuse.org/repositories/benchmark/SLE_12_SP3_Backports/benchmark.repo
-			zypper --no-gpg-checks --non-interactive --gpg-auto-import-keys refresh
-			zypper --no-gpg-checks --non-interactive --gpg-auto-import-keys remove gettext-runtime-mini-0.19.2-1.103.x86_64
-			zypper --no-gpg-checks --non-interactive --gpg-auto-import-keys install sysstat
-			zypper --no-gpg-checks --non-interactive --gpg-auto-import-keys install grub2
-			zypper --no-gpg-checks --non-interactive --gpg-auto-import-keys install wget mdadm blktrace libaio1 fio
-		elif [[ $DISTRO =~ "clear-linux-os" ]];
-		then
-			LogMsg "Detected Clear Linux OS. Installing required packages"
-			swupd bundle-add dev-utils-dev sysadmin-basic performance-tools os-testsuite-phoronix network-basic openssh-server dev-utils os-core os-core-dev
+	elif [[ $DISTRO =~ "SUSE Linux Enterprise Server 12" ]];
+	then
+		LogMsg "Detected SLES12. Installing required packages"
+		zypper addrepo http://download.opensuse.org/repositories/benchmark/SLE_12_SP3_Backports/benchmark.repo
+		zypper --no-gpg-checks --non-interactive --gpg-auto-import-keys refresh
+		zypper --no-gpg-checks --non-interactive --gpg-auto-import-keys remove gettext-runtime-mini-0.19.2-1.103.x86_64
+		zypper --no-gpg-checks --non-interactive --gpg-auto-import-keys install sysstat
+		zypper --no-gpg-checks --non-interactive --gpg-auto-import-keys install grub2
+		zypper --no-gpg-checks --non-interactive --gpg-auto-import-keys install wget mdadm blktrace libaio1 fio
+	elif [[ $DISTRO =~ "clear-linux-os" ]];
+	then
+		LogMsg "Detected Clear Linux OS. Installing required packages"
+		swupd bundle-add dev-utils-dev sysadmin-basic performance-tools os-testsuite-phoronix network-basic openssh-server dev-utils os-core os-core-dev
 
-		else
-				LogMsg "Unknown Distro"
-				UpdateTestState $ICA_TESTABORTED
-				UpdateSummary "Unknown Distro, test aborted"
-				return 1
+	else
+			LogMsg "Unknown Distro"
+			UpdateTestState $ICA_TESTABORTED
+			UpdateSummary "Unknown Distro, test aborted"
+			return 1
 	fi
 }
 
@@ -210,11 +211,10 @@ RunFIO()
 	UpdateTestState $ICA_TESTCOMPLETED
 }
 
-
-CreateRAID0()
+RemoveRAID()
 {
 	disks=$(ls -l /dev | grep sd[b-z]$ | awk '{print $10}')
-	
+
 	LogMsg "INFO: Check and remove RAID first"
 	mdvol=$(cat /proc/mdstat | grep md | awk -F: '{ print $1 }')
 	if [ -n "$mdvol" ]; then
@@ -222,9 +222,17 @@ CreateRAID0()
 		umount /dev/${mdvol}
 		mdadm --stop /dev/${mdvol}
 		mdadm --remove /dev/${mdvol}
-		mdadm --zero-superblock /dev/sd[b-z][1-5]
+		for disk in ${disks}
+		do
+			echo "formatting disk /dev/${disk}"
+			mkfs -t ext4 -F /dev/${disk}
+		done
 	fi
-	
+}
+
+CreateRAID0()
+{
+	disks=$(ls -l /dev | grep sd[b-z]$ | awk '{print $10}')	
 	LogMsg "INFO: Creating Partitions"
 	count=0
 	for disk in ${disks}
@@ -243,61 +251,22 @@ CreateRAID0()
 	sleep 1
 	mount -o nobarrier ${mdVolume} ${mountDir}
 	if [ $? -ne 0 ]; then
-		LogMsg "Error: Unable to create raid"
+		UpdateTestState "$ICA_TESTFAILED"
+		LogMsg "Error: unable to mount ${mdVolume} to ${mountDir}"
 		exit 1
 	else
 		LogMsg "${mdVolume} mounted to ${mountDir} successfully."
 	fi
 }
 
-CreateLVM()
-{
-	disks=$(ls -l /dev | grep sd[c-z]$ | awk '{print $10}')
-	
-	vgExist=$(vgdisplay)
-	if [ -n "$vgExist" ]; then
-		umount ${mountDir}
-		lvremove -A n -f /dev/${vggroup}/lv1
-		vgremove ${vggroup} -f
-	fi
-	
-	LogMsg "INFO: Creating Partition"
-	count=0
-	for disk in ${disks}
-	do		
-		echo "formatting disk /dev/${disk}"
-		(echo d; echo n; echo p; echo 1; echo; echo; echo t; echo fd; echo w;) | fdisk /dev/${disk}
-		count=$(( $count + 1 )) 
-	done
-	
-	LogMsg "INFO: Creating LVM with all data disks"
-	pvcreate /dev/sd[c-z][1-5]
-	vgcreate ${vggroup} /dev/sd[c-z][1-5]
-	lvcreate -l 100%FREE -i 12 -I 64 ${vggroup} -n lv1
-	time mkfs -t $1 -F /dev/${vggroup}/lv1
-	mkdir ${mountDir}
-	mount -o nobarrier /dev/${vggroup}/lv1 ${mountDir}
-	if [ $? -ne 0 ]; then
-		LogMsg "Error: Unable to create LVM "
-		exit 1
-	fi
-}
-
 MountDisk()
 {
-	LogMsg "INFO: Check and remove RAID first"
-	mdvol=$(cat /proc/mdstat | grep md | awk -F: '{ print $1 }')
-	if [ -n "$mdvol" ]; then
-		echo "/dev/${mdvol} already exist...removing first"
-		mdadm --stop /dev/${mdvol}
-		mdadm --remove /dev/${mdvol}
-	fi
 	time mkfs -t $1 -F /dev/${disk}
 	mkdir ${mountDir}
 	sleep 1
 	mount -o nobarrier /dev/${disk} ${mountDir}
 	if [ $? -ne 0 ]; then
-		UpdateTestState "$ICA_TESTABORTED"
+		UpdateTestState "$ICA_TESTFAILED"
 		LogMsg "Error: Unable to mount ${disk} to ${mountDir}"
 		exit 1
 	else
@@ -319,11 +288,12 @@ then
 else
 	mdVolume="/dev/md0"
 fi
-vggroup="vg1"
+
 mountDir="/data"
 cd ${HOMEDIR}
 
 InstallFIO
+RemoveRAID
 
 disks=($(ls -l /dev | grep sd[b-z]$ | awk '{print $10}'))
 
@@ -353,7 +323,6 @@ if [[ $RaidOption == 'No RAID' && ${#disks[@]} -gt 1 ]]; then
 else
 	FILEIO="--size=${fileSize} --direct=1 --ioengine=libaio --filename=fiodata --overwrite=1  "
 	cd ${mountDir}
-	mkdir sampleDIR
 fi
 RunFIO
 LogMsg "*********INFO: Script execution reach END. Completed !!!*********"

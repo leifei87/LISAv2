@@ -16,58 +16,55 @@
 #
 #######################################################################
 
-. ./azuremodules.sh
+. ./nested_kvm_utils.sh
 . ./constants.sh
-
 #HOW TO PARSE THE ARGUMENTS.. SOURCE - http://stackoverflow.com/questions/4882349/parsing-shell-script-arguments
 while echo $1 | grep -q ^-; do
    declare $( echo $1 | sed 's/^-//' )=$2
    shift
    shift
 done
-ImageName="nested.qcow2"
-#
-# Constants/Globals
-#
-ICA_TESTRUNNING="TestRunning"      # The test is running
-ICA_TESTCOMPLETED="TestCompleted"  # The test completed successfully
-ICA_TESTABORTED="TestAborted"      # Error during the setup of the test
-ICA_TESTFAILED="TestFailed"        # Error occurred during the test
-
 
 if [ -z "$NestedImageUrl" ]; then
-        echo "Please mention -NestedImageUrl next"
-        exit 1
+    echo "Please mention -NestedImageUrl next"
+    exit 1
 fi
 if [ -z "$NestedUser" ]; then
-        echo "Please mention -NestedUser next"
-        exit 1
+    echo "Please mention -NestedUser next"
+    exit 1
 fi
 if [ -z "$NestedUserPassword" ]; then
-        echo "Please mention -NestedUserPassword next"
-        exit 1
+    echo "Please mention -NestedUserPassword next"
+    exit 1
 fi
 if [ -z "$NestedCpuNum" ]; then
-        echo "Please mention -NestedCpuNum next"
-        exit 1
+    echo "Please mention -NestedCpuNum next"
+    exit 1
 fi
 if [ -z "$NestedMemMB" ]; then
-        echo "Please mention -NestedMemMB next"
-        exit 1
+    echo "Please mention -NestedMemMB next"
+    exit 1
 fi
 if [ -z "$platform" ]; then
-        echo "Please mention -platform next"
-        exit 1
+    echo "Please mention -platform next"
+    exit 1
 fi
 if [ -z "$RaidOption" ]; then
-        echo "Please mention -RaidOption next"
-        exit 1
+    echo "Please mention -RaidOption next"
+    exit 1
 fi
 if [ -z "$logFolder" ]; then
-        logFolder="."
-        echo "-logFolder is not mentioned. Using ."
+    logFolder="."
+    echo "-logFolder is not mentioned. Using ."
 else
-        echo "Using Log Folder $logFolder"
+    echo "Using Log Folder $logFolder"
+fi
+if [[ $RaidOption == 'RAID in L1' ]] || [[ $RaidOption == 'RAID in L2' ]] || [[ $RaidOption == 'No RAID' ]]; then
+    echo "RaidOption is available"
+else
+    UpdateTestState $ICA_TESTABORTED
+    echo "RaidOption $RaidOption is invalid"
+    exit 0
 fi
 
 touch $logFolder/state.txt
@@ -76,55 +73,6 @@ touch $logFolder/`basename "$0"`.log
 LogMsg()
 {
     echo `date "+%b %d %Y %T"` : "$1" >> $logFolder/`basename "$0"`.log
-}
-
-UpdateTestState()
-{
-    echo "$1" > $logFolder/state.txt
-}
-
-InstallDependencies()
-{
-    update_repos
-    install_package aria2
-    install_package qemu-kvm
-    lsmod | grep kvm_intel
-    exit_status=$?
-    if [ $exit_status -ne 0 ]; then
-        LogMsg "Failed to install KVM"
-        UpdateTestState $ICA_TESTFAILED
-        exit 0
-    else
-        LogMsg "Install KVM succeed"
-    fi
-    distro=$(detect_linux_ditribution)
-    if [ $distro == "centos" ] || [ $distro == "rhel" ] || [ $distro == "oracle" ]; then
-        LogMsg "Install epel repository"
-        install_epel
-        LogMsg "Install qemu-system-x86"
-        install_package qemu-system-x86
-    fi
-    which qemu-system-x86_64
-    if [ $? -ne 0 ]; then
-        LogMsg "Cannot find qemu-system-x86_64"
-        UpdateTestState $ICA_TESTFAILED
-        exit 0
-    fi
-}
-
-GetImageFiles()
-{
-    LogMsg "Downloading $NestedImageUrl..."
-    aria2c -o $ImageName -x 10 $NestedImageUrl
-    #curl -o $ImageName $NestedImageUrl
-    exit_status=$?
-    if [ $exit_status -ne 0 ]; then
-        LogMsg "Download image fail: $NestedImageUrl"
-        UpdateTestState $ICA_TESTFAILED
-        exit 0
-    else
-        LogMsg "Download image succeed"
-    fi
 }
 
 RemoveRAID()
@@ -158,95 +106,23 @@ CreateRAID0()
     LogMsg "INFO: Creating RAID of ${count} devices."
     yes | mdadm --create ${mdVolume} --level 0 --raid-devices ${count} /dev/${devices}[1-5]
     if [ $? -ne 0 ]; then
-        LogMsg "Error: Unable to create raid"            
-        exit 1
+        UpdateTestState $ICA_TESTFAILED
+        LogMsg "Error: Unable to create raid"
+        exit 0
     else
         LogMsg "Create raid successfully."
     fi
 }
 
-StartNestedVM()
-{
-    LogMsg "Start the nested VM: $ImageName"
-    cmd="qemu-system-x86_64 -machine pc-i440fx-2.0,accel=kvm -smp $NestedCpuNum -m $NestedMemMB -hda $ImageName -display none -device e1000,netdev=user.0 -netdev user,id=user.0,hostfwd=tcp::$HostFwdPort-:22 -enable-kvm -daemonize"
-    for disk in ${disks}
-    do
-        LogMsg "add disk /dev/${disk} to nested VM"
-        cmd="${cmd} -drive id=datadisk-${disk},file=/dev/${disk},cache=none,if=none,format=raw,aio=threads -device virtio-scsi-pci -device scsi-hd,drive=datadisk-${disk}"
-    done
-    LogMsg "Run command: $cmd"
-    $cmd
-    LogMsg "Wait for the nested VM to boot up ..."
-    sleep 10
-    retry_times=20
-    exit_status=1
-    while [ $exit_status -ne 0 ] && [ $retry_times -gt 0 ];
-    do
-        retry_times=$(expr $retry_times - 1)
-        if [ $retry_times -eq 0 ]; then
-            LogMsg "Timeout to connect to the nested VM"
-            UpdateTestState $ICA_TESTFAILED
-            exit 0
-        else
-            sleep 10
-            LogMsg "Try to connect to the nested VM, left retry times: $retry_times"
-            remote_copy -host localhost -user $NestedUser -passwd $NestedUserPassword -port $HostFwdPort -filename ./enableRoot.sh -remote_path /home/$NestedUser -cmd put
-            exit_status=$?
-        fi
-    done
-    if [ $exit_status -ne 0 ]; then
-        UpdateTestState $ICA_TESTFAILED
-        exit 0
-    fi
-    remote_copy -host localhost -user $NestedUser -passwd $NestedUserPassword -port $HostFwdPort -filename ./enablePasswordLessRoot.sh -remote_path /home/$NestedUser -cmd put
-    remote_copy -host localhost -user $NestedUser -passwd $NestedUserPassword -port $HostFwdPort -filename ./azuremodules.sh -remote_path /home/$NestedUser -cmd put
-    remote_copy -host localhost -user $NestedUser -passwd $NestedUserPassword -port $HostFwdPort -filename ./StartFioTest.sh -remote_path /home/$NestedUser -cmd put
-    remote_copy -host localhost -user $NestedUser -passwd $NestedUserPassword -port $HostFwdPort -filename ./constants.sh -remote_path /home/$NestedUser -cmd put
-    remote_copy -host localhost -user $NestedUser -passwd $NestedUserPassword -port $HostFwdPort -filename ./ParseFioTestLogs.sh -remote_path /home/$NestedUser -cmd put
-    remote_copy -host localhost -user $NestedUser -passwd $NestedUserPassword -port $HostFwdPort -filename ./nested_kvm_perf_fio.sh -remote_path /home/$NestedUser -cmd put
-
-    remote_exec -host localhost -user $NestedUser -passwd $NestedUserPassword -port $HostFwdPort "chmod a+x /home/$NestedUser/*.sh"
-    remote_exec -host localhost -user $NestedUser -passwd $NestedUserPassword -port $HostFwdPort "echo $NestedUserPassword | sudo -S /home/$NestedUser/enableRoot.sh -password $NestedUserPassword"
-    if [ $? -eq 0 ]; then
-        LogMsg "Root enabled for VM: $image_name"
-    else
-        LogMsg "Failed to enable root for VM: $image_name"
-        UpdateTestState $ICA_TESTFAILED
-        exit 0
-    fi
-    remote_exec -host localhost -user root -passwd $NestedUserPassword -port $HostFwdPort "cp /home/$NestedUser/*.sh /root"	
-}
-
-RebootNestedVM()
-{
-    LogMsg "Reboot the nested VM"
-    remote_exec -host localhost -user root -passwd $NestedUserPassword -port $HostFwdPort "reboot"
-    LogMsg "Wait for the nested VM to boot up ..."
-    sleep 30
-    retry_times=20
-    exit_status=1
-    while [ $exit_status -ne 0 ] && [ $retry_times -gt 0 ];
-    do
-        retry_times=$(expr $retry_times - 1)
-        if [ $retry_times -eq 0 ]; then
-            LogMsg "Timeout to connect to the nested VM"
-            UpdateTestState $ICA_TESTFAILED
-            exit 0
-        else
-            sleep 10
-            LogMsg "Try to connect to the nested VM, left retry times: $retry_times"
-            remote_exec -host localhost -user root -passwd $NestedUserPassword -port $HostFwdPort "hostname"
-            exit_status=$?
-        fi
-    done
-    if [ $exit_status -ne 0 ]; then
-        UpdateTestState $ICA_TESTFAILED
-        exit 0
-    fi
-}
-
 RunFIO()
 {
+    LogMsg "Copy necessary scripts to nested VM"
+    remote_copy -host localhost -user root -passwd $NestedUserPassword -port $HostFwdPort -filename ./azuremodules.sh -remote_path /root -cmd put
+    remote_copy -host localhost -user root -passwd $NestedUserPassword -port $HostFwdPort -filename ./StartFioTest.sh -remote_path /root -cmd put
+    remote_copy -host localhost -user root -passwd $NestedUserPassword -port $HostFwdPort -filename ./constants.sh -remote_path /root -cmd put
+    remote_copy -host localhost -user root -passwd $NestedUserPassword -port $HostFwdPort -filename ./ParseFioTestLogs.sh -remote_path /root -cmd put
+    remote_copy -host localhost -user root -passwd $NestedUserPassword -port $HostFwdPort -filename ./nested_kvm_perf_fio.sh -remote_path /root -cmd put
+
     LogMsg "Start to run StartFioTest.sh on nested VM"
     remote_exec -host localhost -user root -passwd $NestedUserPassword -port $HostFwdPort '/root/StartFioTest.sh'
 }
@@ -270,19 +146,10 @@ CollectLogs()
     fi
 }
 
-StopNestedVMs()
-{
-    LogMsg "Stop the nested VMs"
-    pid=$(pidof qemu-system-x86_64)
-    if [ $? -eq 0 ]; then
-        kill -9 $pid
-    fi
-}
-
-
 ############################################################
 #   Main body
 ############################################################
+UpdateTestState $ICA_TESTRUNNING
 
 if [[ $platform == 'HyperV' ]]; then
     devices='sd[b-z]'
@@ -299,12 +166,27 @@ if [[ $RaidOption == 'RAID in L1' ]]; then
     disks='md0'
 fi
 
-UpdateTestState $ICA_TESTRUNNING
 InstallDependencies
-GetImageFiles
-StartNestedVM
-RebootNestedVM
+ImageName="nested.qcow2"
+GetImageFiles -destination_image_name $ImageName -source_image_url $NestedImageUrl
+
+#Prepare command for start nested kvm
+cmd="qemu-system-x86_64 -machine pc-i440fx-2.0,accel=kvm -smp $NestedCpuNum -m $NestedMemMB -hda $ImageName -display none -device e1000,netdev=user.0 -netdev user,id=user.0,hostfwd=tcp::$HostFwdPort-:22 -enable-kvm -daemonize"
+for disk in ${disks}
+do
+    echo "add disk /dev/${disk} to nested VM"
+    cmd="${cmd} -drive id=datadisk-${disk},file=/dev/${disk},cache=none,if=none,format=raw,aio=threads -device virtio-scsi-pci -device scsi-hd,drive=datadisk-${disk}"
+done
+
+#Prepare nested kvm
+StartNestedVM -user $NestedUser -passwd $NestedUserPassword -port $HostFwdPort $cmd
+EnableRoot -user $NestedUser -passwd $NestedUserPassword -port $HostFwdPort
+RebootNestedVM -user root -passwd $NestedUserPassword -port $HostFwdPort
+
+#Run fio test
 RunFIO
+
+#Collect test logs
 CollectLogs
 StopNestedVMs
 collect_VM_properties
