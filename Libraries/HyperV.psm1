@@ -239,7 +239,7 @@ Function DeleteHyperVGroup([string]$HyperVGroupName)
     {
 		if ($ExistingRG)
 		{
-			#TBD If user mentiones to use existing group, then skip the deletion of the HyperV group.
+			#TBD If user wants to use existing group, then skip the deletion of the HyperV group.
 		}
 		else
 		{
