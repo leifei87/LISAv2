@@ -25,6 +25,16 @@ while echo $1 | grep -q ^-; do
    shift
 done
 
+#
+# Constants/Globals
+#
+ICA_TESTRUNNING="TestRunning"      # The test is running
+ICA_TESTCOMPLETED="TestCompleted"  # The test completed successfully
+ICA_TESTABORTED="TestAborted"      # Error during the setup of the test
+ICA_TESTFAILED="TestFailed"        # Error occurred during the test
+
+ImageName="nested.qcow2"
+
 if [ -z "$NestedImageUrl" ]; then
     echo "Please mention -NestedImageUrl next"
     exit 1
@@ -45,7 +55,7 @@ if [ -z "$NestedMemMB" ]; then
     echo "Please mention -NestedMemMB next"
     exit 1
 fi
-if [ -z "$platform" ]; then
+if [ -z "$TestPlatform" ]; then
     echo "Please mention -platform next"
     exit 1
 fi
@@ -62,7 +72,7 @@ fi
 if [[ $RaidOption == 'RAID in L1' ]] || [[ $RaidOption == 'RAID in L2' ]] || [[ $RaidOption == 'No RAID' ]]; then
     echo "RaidOption is available"
 else
-    UpdateTestState $ICA_TESTABORTED
+    update_test_state $ICA_TESTABORTED
     echo "RaidOption $RaidOption is invalid"
     exit 0
 fi
@@ -70,14 +80,19 @@ fi
 touch $logFolder/state.txt
 touch $logFolder/`basename "$0"`.log
 
-LogMsg()
+log_msg()
 {
     echo `date "+%b %d %Y %T"` : "$1" >> $logFolder/`basename "$0"`.log
 }
 
-RemoveRAID()
+update_test_state()
 {
-    LogMsg "INFO: Check and remove RAID first"
+    echo "${1}" > $logFolder/state.txt
+}
+
+remove_raid()
+{
+    log_msg "INFO: Check and remove RAID first"
     mdvol=$(cat /proc/mdstat | grep md | awk -F: '{ print $1 }')
     if [ -n "$mdvol" ]; then
         echo "/dev/${mdvol} already exist...removing first"
@@ -92,9 +107,9 @@ RemoveRAID()
     fi
 }
 
-CreateRAID0()
+create_raid0()
 {
-    LogMsg "INFO: Creating Partitions"
+    log_msg "INFO: Creating Partitions"
     count=0
     for disk in ${disks}
     do
@@ -103,45 +118,45 @@ CreateRAID0()
         count=$(( $count + 1 ))
         sleep 1
     done
-    LogMsg "INFO: Creating RAID of ${count} devices."
+    log_msg "INFO: Creating RAID of ${count} devices."
     yes | mdadm --create ${mdVolume} --level 0 --raid-devices ${count} /dev/${devices}[1-5]
     if [ $? -ne 0 ]; then
-        UpdateTestState $ICA_TESTFAILED
-        LogMsg "Error: Unable to create raid"
+        update_test_state $ICA_TESTFAILED
+        log_msg "Error: Unable to create raid"
         exit 0
     else
-        LogMsg "Create raid successfully."
+        log_msg "Create raid successfully."
     fi
 }
 
-RunFIO()
+run_fio()
 {
-    LogMsg "Copy necessary scripts to nested VM"
+    log_msg "Copy necessary scripts to nested VM"
     remote_copy -host localhost -user root -passwd $NestedUserPassword -port $HostFwdPort -filename ./azuremodules.sh -remote_path /root -cmd put
     remote_copy -host localhost -user root -passwd $NestedUserPassword -port $HostFwdPort -filename ./StartFioTest.sh -remote_path /root -cmd put
     remote_copy -host localhost -user root -passwd $NestedUserPassword -port $HostFwdPort -filename ./constants.sh -remote_path /root -cmd put
     remote_copy -host localhost -user root -passwd $NestedUserPassword -port $HostFwdPort -filename ./ParseFioTestLogs.sh -remote_path /root -cmd put
     remote_copy -host localhost -user root -passwd $NestedUserPassword -port $HostFwdPort -filename ./nested_kvm_perf_fio.sh -remote_path /root -cmd put
 
-    LogMsg "Start to run StartFioTest.sh on nested VM"
+    log_msg "Start to run StartFioTest.sh on nested VM"
     remote_exec -host localhost -user root -passwd $NestedUserPassword -port $HostFwdPort '/root/StartFioTest.sh'
 }
 
-CollectLogs()
+collect_logs()
 {
-    LogMsg "Finished running StartFioTest.sh, start to collect logs"
+    log_msg "Finished running StartFioTest.sh, start to collect logs"
     remote_copy -host localhost -user root -passwd $NestedUserPassword -port $HostFwdPort -filename fioConsoleLogs.txt -remote_path "/root" -cmd get
     remote_copy -host localhost -user root -passwd $NestedUserPassword -port $HostFwdPort -filename runlog.txt -remote_path "/root" -cmd get
     remote_copy -host localhost -user root -passwd $NestedUserPassword -port $HostFwdPort -filename state.txt -remote_path "/root" -cmd get
     state=`cat state.txt`
-    LogMsg "FIO Test state: $state"
+    log_msg "FIO Test state: $state"
     if [ $state == 'TestCompleted' ]; then
         remote_exec -host localhost -user root -passwd $NestedUserPassword -port $HostFwdPort '/root/ParseFioTestLogs.sh'
         remote_copy -host localhost -user root -passwd $NestedUserPassword -port $HostFwdPort -filename FIOTest-*.tar.gz -remote_path "/root" -cmd get
         remote_copy -host localhost -user root -passwd $NestedUserPassword -port $HostFwdPort -filename perf_fio.csv -remote_path "/root" -cmd get
         remote_copy -host localhost -user root -passwd $NestedUserPassword -port $HostFwdPort -filename nested_properties.csv -remote_path "/root" -cmd get
     else
-        UpdateTestState $ICA_TESTFAILED
+        update_test_state $ICA_TESTFAILED
         exit 0
     fi
 }
@@ -149,26 +164,26 @@ CollectLogs()
 ############################################################
 #   Main body
 ############################################################
-UpdateTestState $ICA_TESTRUNNING
+update_test_state $ICA_TESTRUNNING
 
-if [[ $platform == 'HyperV' ]]; then
+if [[ $TestPlatform == 'HyperV' ]]; then
     devices='sd[b-z]'
 else
     devices='sd[c-z]'
 fi
 
 disks=$(ls -l /dev | grep ${devices}$ | awk '{print $10}')
-RemoveRAID
+remove_raid
 
 if [[ $RaidOption == 'RAID in L1' ]]; then
     mdVolume="/dev/md0"
-    CreateRAID0
+    create_raid0
     disks='md0'
 fi
 
-InstallDependencies
-ImageName="nested.qcow2"
-GetImageFiles -destination_image_name $ImageName -source_image_url $NestedImageUrl
+install_dependencies
+
+download_image_files -destination_image_name $ImageName -source_image_url $NestedImageUrl
 
 #Prepare command for start nested kvm
 cmd="qemu-system-x86_64 -machine pc-i440fx-2.0,accel=kvm -smp $NestedCpuNum -m $NestedMemMB -hda $ImageName -display none -device e1000,netdev=user.0 -netdev user,id=user.0,hostfwd=tcp::$HostFwdPort-:22 -enable-kvm -daemonize"
@@ -179,15 +194,15 @@ do
 done
 
 #Prepare nested kvm
-StartNestedVM -user $NestedUser -passwd $NestedUserPassword -port $HostFwdPort $cmd
-EnableRoot -user $NestedUser -passwd $NestedUserPassword -port $HostFwdPort
-RebootNestedVM -user root -passwd $NestedUserPassword -port $HostFwdPort
+start_nested_vm -user $NestedUser -passwd $NestedUserPassword -port $HostFwdPort $cmd
+enable_root -user $NestedUser -passwd $NestedUserPassword -port $HostFwdPort
+reboot_nested_vm -user root -passwd $NestedUserPassword -port $HostFwdPort
 
 #Run fio test
-RunFIO
+run_fio
 
 #Collect test logs
-CollectLogs
-StopNestedVMs
+collect_logs
+stop_nested_vm
 collect_VM_properties
-UpdateTestState $ICA_TESTCOMPLETED
+update_test_state $ICA_TESTCOMPLETED

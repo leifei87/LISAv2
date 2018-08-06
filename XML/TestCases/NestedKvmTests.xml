@@ -48,6 +48,7 @@
         <setupType>HYPERVDISK1</setupType>
         <OverrideVMSize></OverrideVMSize>
         <TestParameters>
+            <param>TestPlatform=HyperV</param>
             <!--The nested image should be qcow2 format, and accessible from a public URL-->
             <param>NestedImageUrl=NESTED_IMAGE_URL</param>
             <param>NestedUser=NESTED_VM_USER</param>
@@ -78,6 +79,7 @@
         <setupType>D16SV3DISK1</setupType>
         <OverrideVMSize></OverrideVMSize>
         <TestParameters>
+            <param>TestPlatform=Azure</param>
             <!--The nested image should be qcow2 format, and accessible from a public URL-->
             <param>NestedImageUrl=NESTED_IMAGE_URL</param>
             <param>NestedUser=NESTED_VM_USER</param>
@@ -108,6 +110,7 @@
         <setupType>HYPERVDISK4</setupType>
         <OverrideVMSize></OverrideVMSize>
         <TestParameters>
+            <param>TestPlatform=HyperV</param>
             <!--The nested image should be qcow2 format, and accessible from a public URL-->
             <param>NestedImageUrl=NESTED_IMAGE_URL</param>
             <param>NestedUser=NESTED_VM_USER</param>
@@ -139,6 +142,7 @@
         <setupType>D16SV3DISK6</setupType>
         <OverrideVMSize></OverrideVMSize>
         <TestParameters>
+            <param>TestPlatform=Azure</param>
             <!--The nested image should be qcow2 format, and accessible from a public URL-->
             <param>NestedImageUrl=NESTED_IMAGE_URL</param>
             <param>NestedUser=NESTED_VM_USER</param>

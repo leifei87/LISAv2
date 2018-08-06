@@ -17,12 +17,12 @@
 #######################################################################
 
 HOMEDIR="/root"
-LogMsg()
+log_msg()
 {
 	echo "[$(date +"%x %r %Z")] ${1}"
 	echo "[$(date +"%x %r %Z")] ${1}" >> "${HOMEDIR}/runlog.txt"
 }
-LogMsg "Sleeping 10 seconds.."
+log_msg "Sleeping 10 seconds.."
 sleep 10
 
 #export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/share/oem/bin:/usr/share/oem/python/bin:/opt/bin
@@ -37,65 +37,65 @@ if [ -e ${CONSTANTS_FILE} ]; then
 	. ${CONSTANTS_FILE}
 else
 	errMsg="Error: missing ${CONSTANTS_FILE} file"
-	LogMsg "${errMsg}"
-	UpdateTestState $ICA_TESTABORTED
+	log_msg "${errMsg}"
+	update_test_state $ICA_TESTABORTED
 	exit 10
 fi
 
 
-UpdateTestState()
+update_test_state()
 {
 	echo "${1}" > $HOMEDIR/state.txt
 }
 
-InstallFIO() {
+install_fio() {
 	DISTRO=`grep -ihs "buntu\|Suse\|Fedora\|Debian\|CentOS\|Red Hat Enterprise Linux\|clear-linux-os" /etc/{issue,*release,*version} /usr/lib/os-release`
 
 	if [[ $DISTRO =~ "Ubuntu" ]] || [[ $DISTRO =~ "Debian" ]];
 	then
-		LogMsg "Detected UBUNTU/Debian. Installing required packages"
+		log_msg "Detected UBUNTU/Debian. Installing required packages"
 		until dpkg --force-all --configure -a; sleep 10; do echo 'Trying again...'; done
 		apt-get update
 		apt-get install -y pciutils gawk mdadm
 		apt-get install -y wget sysstat blktrace bc fio
 		if [ $? -ne 0 ]; then
-			LogMsg "Error: Unable to install fio"
-			UpdateTestState $ICA_TESTABORTED
+			log_msg "Error: Unable to install fio"
+			update_test_state $ICA_TESTABORTED
 			exit 1
 		fi
 		mount -t debugfs none /sys/kernel/debug
 						
 	elif [[ $DISTRO =~ "Red Hat Enterprise Linux Server release 6" ]];
 	then
-		LogMsg "Detected RHEL 6.x; Installing required packages"
+		log_msg "Detected RHEL 6.x; Installing required packages"
 		rpm -ivh https://dl.fedoraproject.org/pub/epel/epel-release-latest-6.noarch.rpm
 		yum -y --nogpgcheck install wget sysstat mdadm blktrace libaio fio
 		mount -t debugfs none /sys/kernel/debug
 
 	elif [[ $DISTRO =~ "Red Hat Enterprise Linux Server release 7" ]];
 	then
-		LogMsg "Detected RHEL 7.x; Installing required packages"
+		log_msg "Detected RHEL 7.x; Installing required packages"
 		rpm -ivh https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
 		yum -y --nogpgcheck install wget sysstat mdadm blktrace libaio fio
 		mount -t debugfs none /sys/kernel/debug
 			
 	elif [[ $DISTRO =~ "CentOS Linux release 6" ]] || [[ $DISTRO =~ "CentOS release 6" ]];
 	then
-		LogMsg "Detected CentOS 6.x; Installing required packages"
+		log_msg "Detected CentOS 6.x; Installing required packages"
 		rpm -ivh https://dl.fedoraproject.org/pub/epel/epel-release-latest-6.noarch.rpm
 		yum -y --nogpgcheck install wget sysstat mdadm blktrace libaio fio
 		mount -t debugfs none /sys/kernel/debug
 			
 	elif [[ $DISTRO =~ "CentOS Linux release 7" ]];
 	then
-		LogMsg "Detected CentOS 7.x; Installing required packages"
+		log_msg "Detected CentOS 7.x; Installing required packages"
 		rpm -ivh https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
 		yum -y --nogpgcheck install wget sysstat mdadm blktrace libaio fio
 		mount -t debugfs none /sys/kernel/debug
 
 	elif [[ $DISTRO =~ "SUSE Linux Enterprise Server 12" ]];
 	then
-		LogMsg "Detected SLES12. Installing required packages"
+		log_msg "Detected SLES12. Installing required packages"
 		zypper addrepo http://download.opensuse.org/repositories/benchmark/SLE_12_SP3_Backports/benchmark.repo
 		zypper --no-gpg-checks --non-interactive --gpg-auto-import-keys refresh
 		zypper --no-gpg-checks --non-interactive --gpg-auto-import-keys remove gettext-runtime-mini-0.19.2-1.103.x86_64
@@ -104,20 +104,20 @@ InstallFIO() {
 		zypper --no-gpg-checks --non-interactive --gpg-auto-import-keys install wget mdadm blktrace libaio1 fio
 	elif [[ $DISTRO =~ "clear-linux-os" ]];
 	then
-		LogMsg "Detected Clear Linux OS. Installing required packages"
+		log_msg "Detected Clear Linux OS. Installing required packages"
 		swupd bundle-add dev-utils-dev sysadmin-basic performance-tools os-testsuite-phoronix network-basic openssh-server dev-utils os-core os-core-dev
 
 	else
-			LogMsg "Unknown Distro"
-			UpdateTestState $ICA_TESTABORTED
+			log_msg "Unknown Distro"
+			update_test_state $ICA_TESTABORTED
 			UpdateSummary "Unknown Distro, test aborted"
 			return 1
 	fi
 }
 
-RunFIO()
+run_fio()
 {
-	UpdateTestState $ICA_TESTRUNNING
+	update_test_state $ICA_TESTRUNNING
 
 	####################################
 	#All run config set here
@@ -150,7 +150,7 @@ RunFIO()
 	chmod 666 $LOGFILE
 	echo "Preparing Files: $FILEIO"
 	echo "Preparing Files: $FILEIO" >> $LOGFILE
-	LogMsg "Preparing Files: $FILEIO"
+	log_msg "Preparing Files: $FILEIO"
 	# Remove any old files from prior runs (to be safe), then prepare a set of new files.
 	rm fiodata
 	echo "--- Kernel Version Information ---" >> $LOGFILE
@@ -168,7 +168,7 @@ RunFIO()
 	echo "--- Disk Usage After Generating New Files ---" >> $LOGFILE
 	df -h >> $LOGFILE
 	echo "=== End Preparation  $(date +"%x %r %Z") ===" >> $LOGFILE
-	LogMsg "Preparing Files: $FILEIO: Finished."
+	log_msg "Preparing Files: $FILEIO: Finished."
 	####################################
 	#Trigger run from here
 	for testmode in $modes; do
@@ -187,7 +187,7 @@ RunFIO()
 				iostatfilename="${IOSTATLOGDIR}/iostat-fio-${testmode}-${io}K-${Thread}td.txt"
 				nohup iostat -x 5 -t -y > $iostatfilename &
 				echo "-- iteration ${iteration} ----------------------------- ${testmode} test, ${io}K bs, ${Thread} threads, ${numjobs} jobs, 5 minutes ------------------ $(date +"%x %r %Z") ---" >> $LOGFILE
-				LogMsg "Running ${testmode} test, ${io}K bs, ${Thread} threads ..."
+				log_msg "Running ${testmode} test, ${io}K bs, ${Thread} threads ..."
 				jsonfilename="${JSONFILELOG}/fio-result-${testmode}-${io}K-${Thread}td.json"
 				fio $FILEIO --readwrite=$testmode --bs=${io}K --runtime=$ioruntime --iodepth=$Thread --numjobs=$numjobs --output-format=json --output=$jsonfilename --name="iteration"${iteration} >> $LOGFILE
 				#fio $FILEIO --readwrite=$testmode --bs=${io}K --runtime=$ioruntime --iodepth=$Thread --numjobs=$numjobs --name="iteration"${iteration} --group_reporting >> $LOGFILE
@@ -204,18 +204,18 @@ RunFIO()
 	rm fiodata
 
 	compressedFileName="${HOMEDIR}/FIOTest-$(date +"%m%d%Y-%H%M%S").tar.gz"
-	LogMsg "INFO: Please wait...Compressing all results to ${compressedFileName}..."
+	log_msg "INFO: Please wait...Compressing all results to ${compressedFileName}..."
 	tar -cvzf $compressedFileName $LOGDIR/
 
 	echo "Test logs are located at ${LOGDIR}"
-	UpdateTestState $ICA_TESTCOMPLETED
+	update_test_state $ICA_TESTCOMPLETED
 }
 
-RemoveRAID()
+remove_raid()
 {
 	disks=$(ls -l /dev | grep sd[b-z]$ | awk '{print $10}')
 
-	LogMsg "INFO: Check and remove RAID first"
+	log_msg "INFO: Check and remove RAID first"
 	mdvol=$(cat /proc/mdstat | grep md | awk -F: '{ print $1 }')
 	if [ -n "$mdvol" ]; then
 		echo "/dev/${mdvol} already exist...removing first"
@@ -230,10 +230,10 @@ RemoveRAID()
 	fi
 }
 
-CreateRAID0()
+create_raid0()
 {
 	disks=$(ls -l /dev | grep sd[b-z]$ | awk '{print $10}')	
-	LogMsg "INFO: Creating Partitions"
+	log_msg "INFO: Creating Partitions"
 	count=0
 	for disk in ${disks}
 	do		
@@ -242,7 +242,7 @@ CreateRAID0()
 		count=$(( $count + 1 ))
 		sleep 1
 	done
-	LogMsg "INFO: Creating RAID of ${count} devices."
+	log_msg "INFO: Creating RAID of ${count} devices."
 	sleep 1
 	yes | mdadm --create ${mdVolume} --level 0 --raid-devices ${count} /dev/sd[b-z][1-5]
 	sleep 1
@@ -251,26 +251,26 @@ CreateRAID0()
 	sleep 1
 	mount -o nobarrier ${mdVolume} ${mountDir}
 	if [ $? -ne 0 ]; then
-		UpdateTestState "$ICA_TESTFAILED"
-		LogMsg "Error: unable to mount ${mdVolume} to ${mountDir}"
+		update_test_state "$ICA_TESTFAILED"
+		log_msg "Error: unable to mount ${mdVolume} to ${mountDir}"
 		exit 1
 	else
-		LogMsg "${mdVolume} mounted to ${mountDir} successfully."
+		log_msg "${mdVolume} mounted to ${mountDir} successfully."
 	fi
 }
 
-MountDisk()
+mount_disk()
 {
 	time mkfs -t $1 -F /dev/${disk}
 	mkdir ${mountDir}
 	sleep 1
 	mount -o nobarrier /dev/${disk} ${mountDir}
 	if [ $? -ne 0 ]; then
-		UpdateTestState "$ICA_TESTFAILED"
-		LogMsg "Error: Unable to mount ${disk} to ${mountDir}"
+		update_test_state "$ICA_TESTFAILED"
+		log_msg "Error: Unable to mount ${disk} to ${mountDir}"
 		exit 1
 	else
-		LogMsg "${disk} mounted to ${mountDir} successfully."
+		log_msg "${disk} mounted to ${mountDir} successfully."
 	fi
 }
 ############################################################
@@ -292,23 +292,23 @@ fi
 mountDir="/data"
 cd ${HOMEDIR}
 
-InstallFIO
-RemoveRAID
+install_fio
+remove_raid
 
 disks=($(ls -l /dev | grep sd[b-z]$ | awk '{print $10}'))
 
 #Skip to create RAID0 for single disk
 if [ ${#disks[@]} -eq 1 ]; then
 	disk=${disks[0]}
-	MountDisk ext4
+	mount_disk ext4
 else
 	if [[ $RaidOption == 'RAID in L2' ]]; then
-		CreateRAID0 ext4
+		create_raid0 ext4
 	fi
 fi
 
 #Run test from here
-LogMsg "*********INFO: Starting test execution*********"
+log_msg "*********INFO: Starting test execution*********"
 if [[ $RaidOption == 'No RAID' && ${#disks[@]} -gt 1 ]]; then
 	filename=''
 	for disk in ${disks[@]}
@@ -324,5 +324,5 @@ else
 	FILEIO="--size=${fileSize} --direct=1 --ioengine=libaio --filename=fiodata --overwrite=1  "
 	cd ${mountDir}
 fi
-RunFIO
-LogMsg "*********INFO: Script execution reach END. Completed !!!*********"
+run_fio
+log_msg "*********INFO: Script execution reach END. Completed !!!*********"

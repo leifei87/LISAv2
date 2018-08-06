@@ -19,17 +19,7 @@
 
 . ./azuremodules.sh
 
-ICA_TESTRUNNING="TestRunning"      # The test is running
-ICA_TESTCOMPLETED="TestCompleted"  # The test completed successfully
-ICA_TESTABORTED="TestAborted"      # Error during the setup of the test
-ICA_TESTFAILED="TestFailed"        # Error occurred during the test
-
-UpdateTestState()
-{
-    echo "${1}" > state.txt
-}
-
-InstallDependencies()
+install_dependencies()
 {
     update_repos
     install_package aria2
@@ -38,7 +28,6 @@ InstallDependencies()
     exit_status=$?
     if [ $exit_status -ne 0 ]; then
         echo "Failed to install KVM"
-        UpdateTestState $ICA_TESTFAILED
         exit 0
     else
         echo "Install KVM succeed"
@@ -53,19 +42,17 @@ InstallDependencies()
     which qemu-system-x86_64
     if [ $? -ne 0 ]; then
         echo "Cannot find qemu-system-x86_64"
-        UpdateTestState $ICA_TESTFAILED
         exit 0
     fi
 }
 
-GetImageFiles()
+download_image_files()
 {
     while echo $1 | grep -q ^-; do
        declare $( echo $1 | sed 's/^-//' )=$2
        shift
        shift
     done
-
     if [ "x$destination_image_name" == "x" ] || [ "x$source_image_url" == "x" ] ; then
         echo "Usage: GetImageFiles -destination_image_name <destination image name> -source_image_url <source nested image url>"
         return
@@ -75,14 +62,13 @@ GetImageFiles()
     exit_status=$?
     if [ $exit_status -ne 0 ]; then
         echo "Download image fail: $NestedImageUrl"
-        UpdateTestState $ICA_TESTFAILED
         exit 0
     else
         echo "Download image succeed"
     fi
 }
 
-StartNestedVM()
+start_nested_vm()
 {
     while echo $1 | grep -q ^-; do
        declare $( echo $1 | sed 's/^-//' )=$2
@@ -107,7 +93,6 @@ StartNestedVM()
         retry_times=$(expr $retry_times - 1)
         if [ $retry_times -eq 0 ]; then
             echo "Timeout to connect to the nested VM"
-            UpdateTestState $ICA_TESTFAILED
             exit 0
         else
             sleep 10
@@ -117,19 +102,17 @@ StartNestedVM()
         fi
     done
     if [ $exit_status -ne 0 ]; then
-        UpdateTestState $ICA_TESTFAILED
         exit 0
     fi
 }
 
-RebootNestedVM()
+reboot_nested_vm()
 {
     while echo $1 | grep -q ^-; do
        declare $( echo $1 | sed 's/^-//' )=$2
        shift
        shift
     done
-
     if [ "x$user" == "x" ] || [ "x$passwd" == "x" ] || [ "x$port" == "x" ] ; then
         echo "Usage: RebootNestedVM -user <username> -passwd <user password> -port <port>"
         return
@@ -146,7 +129,6 @@ RebootNestedVM()
         retry_times=$(expr $retry_times - 1)
         if [ $retry_times -eq 0 ]; then
             echo "Timeout to connect to the nested VM"
-            UpdateTestState $ICA_TESTFAILED
             exit 0
         else
             sleep 10
@@ -156,12 +138,12 @@ RebootNestedVM()
         fi
     done
     if [ $exit_status -ne 0 ]; then
-        UpdateTestState $ICA_TESTFAILED
+        echo "Timeout to connect to the nested VM"
         exit 0
     fi
 }
 
-StopNestedVMs()
+stop_nested_vm()
 {
     echo "Stop the nested VMs"
     pid=$(pidof qemu-system-x86_64)
@@ -170,14 +152,13 @@ StopNestedVMs()
     fi
 }
 
-EnableRoot()
+enable_root()
 {
     while echo $1 | grep -q ^-; do
        declare $( echo $1 | sed 's/^-//' )=$2
        shift
        shift
     done
-
     if [ "x$user" == "x" ] || [ "x$passwd" == "x" ] || [ "x$port" == "x" ] ; then
         echo "Usage: EnableRoot -user <username> -passwd <user password> -port <port>"
         return
@@ -190,7 +171,6 @@ EnableRoot()
         echo "Root enabled for VM: $image_name"
     else
         echo "Failed to enable root for VM: $image_name"
-        UpdateTestState $ICA_TESTFAILED
         exit 0
     fi
 }
