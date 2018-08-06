@@ -129,6 +129,22 @@ create_raid0()
     fi
 }
 
+prepare_nested_vm()
+{
+    #Prepare command for start nested kvm
+    cmd="qemu-system-x86_64 -machine pc-i440fx-2.0,accel=kvm -smp $NestedCpuNum -m $NestedMemMB -hda $ImageName -display none -device e1000,netdev=user.0 -netdev user,id=user.0,hostfwd=tcp::$HostFwdPort-:22 -enable-kvm -daemonize"
+    for disk in ${disks}
+    do
+        echo "add disk /dev/${disk} to nested VM"
+        cmd="${cmd} -drive id=datadisk-${disk},file=/dev/${disk},cache=none,if=none,format=raw,aio=threads -device virtio-scsi-pci -device scsi-hd,drive=datadisk-${disk}"
+    done
+
+    #Prepare nested kvm
+    start_nested_vm -user $NestedUser -passwd $NestedUserPassword -port $HostFwdPort $cmd
+    enable_root -user $NestedUser -passwd $NestedUserPassword -port $HostFwdPort
+    reboot_nested_vm -user root -passwd $NestedUserPassword -port $HostFwdPort
+}
+
 run_fio()
 {
     log_msg "Copy necessary scripts to nested VM"
@@ -185,18 +201,8 @@ install_dependencies
 
 download_image_files -destination_image_name $ImageName -source_image_url $NestedImageUrl
 
-#Prepare command for start nested kvm
-cmd="qemu-system-x86_64 -machine pc-i440fx-2.0,accel=kvm -smp $NestedCpuNum -m $NestedMemMB -hda $ImageName -display none -device e1000,netdev=user.0 -netdev user,id=user.0,hostfwd=tcp::$HostFwdPort-:22 -enable-kvm -daemonize"
-for disk in ${disks}
-do
-    echo "add disk /dev/${disk} to nested VM"
-    cmd="${cmd} -drive id=datadisk-${disk},file=/dev/${disk},cache=none,if=none,format=raw,aio=threads -device virtio-scsi-pci -device scsi-hd,drive=datadisk-${disk}"
-done
-
 #Prepare nested kvm
-start_nested_vm -user $NestedUser -passwd $NestedUserPassword -port $HostFwdPort $cmd
-enable_root -user $NestedUser -passwd $NestedUserPassword -port $HostFwdPort
-reboot_nested_vm -user root -passwd $NestedUserPassword -port $HostFwdPort
+prepare_nested_vm
 
 #Run fio test
 run_fio
