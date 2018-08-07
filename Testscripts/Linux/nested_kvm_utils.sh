@@ -19,6 +19,16 @@
 
 . ./azuremodules.sh
 
+ICA_TESTRUNNING="TestRunning"      # The test is running
+ICA_TESTCOMPLETED="TestCompleted"  # The test completed successfully
+ICA_TESTABORTED="TestAborted"      # Error during the setup of the test
+ICA_TESTFAILED="TestFailed"        # Error occurred during the test
+
+update_test_state()
+{
+    echo "${1}" > state.txt
+}
+
 install_dependencies()
 {
     update_repos
@@ -28,6 +38,7 @@ install_dependencies()
     exit_status=$?
     if [ $exit_status -ne 0 ]; then
         echo "Failed to install KVM"
+        update_test_state $ICA_TESTFAILED
         exit 0
     else
         echo "Install KVM succeed"
@@ -42,6 +53,7 @@ install_dependencies()
     which qemu-system-x86_64
     if [ $? -ne 0 ]; then
         echo "Cannot find qemu-system-x86_64"
+        update_test_state $ICA_TESTFAILED
         exit 0
     fi
 }
@@ -55,13 +67,16 @@ download_image_files()
     done
     if [ "x$destination_image_name" == "x" ] || [ "x$source_image_url" == "x" ] ; then
         echo "Usage: GetImageFiles -destination_image_name <destination image name> -source_image_url <source nested image url>"
-        return
+        update_test_state $ICA_TESTABORTED
+        exit 0
     fi
     echo "Downloading $NestedImageUrl..."
+    rm -f $destination_image_name
     aria2c -o $destination_image_name -x 10 $source_image_url
     exit_status=$?
     if [ $exit_status -ne 0 ]; then
         echo "Download image fail: $NestedImageUrl"
+        update_test_state $ICA_TESTFAILED
         exit 0
     else
         echo "Download image succeed"
@@ -79,7 +94,8 @@ start_nested_vm()
 
     if [ "x$user" == "x" ] || [ "x$passwd" == "x" ] || [ "x$port" == "x" ] || [ "x$cmd" == "x" ] ; then
         echo "Usage: StartNestedVM -user <username> -passwd <user password> -port <port> <command for start nested kvm>"
-        return
+        update_test_state $ICA_TESTABORTED
+        exit 0
     fi
 
     echo "Run command: $cmd"
@@ -93,6 +109,7 @@ start_nested_vm()
         retry_times=$(expr $retry_times - 1)
         if [ $retry_times -eq 0 ]; then
             echo "Timeout to connect to the nested VM"
+            update_test_state $ICA_TESTFAILED
             exit 0
         else
             sleep 10
@@ -102,6 +119,7 @@ start_nested_vm()
         fi
     done
     if [ $exit_status -ne 0 ]; then
+        update_test_state $ICA_TESTFAILED
         exit 0
     fi
 }
@@ -115,7 +133,8 @@ reboot_nested_vm()
     done
     if [ "x$user" == "x" ] || [ "x$passwd" == "x" ] || [ "x$port" == "x" ] ; then
         echo "Usage: RebootNestedVM -user <username> -passwd <user password> -port <port>"
-        return
+        update_test_state $ICA_TESTABORTED
+        exit 0
     fi
 
     echo "Reboot the nested VM"
@@ -129,6 +148,7 @@ reboot_nested_vm()
         retry_times=$(expr $retry_times - 1)
         if [ $retry_times -eq 0 ]; then
             echo "Timeout to connect to the nested VM"
+            update_test_state $ICA_TESTFAILED
             exit 0
         else
             sleep 10
@@ -139,6 +159,7 @@ reboot_nested_vm()
     done
     if [ $exit_status -ne 0 ]; then
         echo "Timeout to connect to the nested VM"
+        update_test_state $ICA_TESTFAILED
         exit 0
     fi
 }
@@ -161,7 +182,8 @@ enable_root()
     done
     if [ "x$user" == "x" ] || [ "x$passwd" == "x" ] || [ "x$port" == "x" ] ; then
         echo "Usage: EnableRoot -user <username> -passwd <user password> -port <port>"
-        return
+        update_test_state $ICA_TESTABORTED
+        exit 0
     fi
 
     remote_copy -host localhost -user $user -passwd $passwd -port $port -filename ./enableRoot.sh -remote_path /home/$user -cmd put
@@ -171,6 +193,7 @@ enable_root()
         echo "Root enabled for VM: $image_name"
     else
         echo "Failed to enable root for VM: $image_name"
+        update_test_state $ICA_TESTFAILED
         exit 0
     fi
 }

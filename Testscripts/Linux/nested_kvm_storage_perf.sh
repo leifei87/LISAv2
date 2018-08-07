@@ -28,11 +28,6 @@ done
 #
 # Constants/Globals
 #
-ICA_TESTRUNNING="TestRunning"      # The test is running
-ICA_TESTCOMPLETED="TestCompleted"  # The test completed successfully
-ICA_TESTABORTED="TestAborted"      # Error during the setup of the test
-ICA_TESTFAILED="TestFailed"        # Error occurred during the test
-
 ImageName="nested.qcow2"
 
 if [ -z "$NestedImageUrl" ]; then
@@ -83,11 +78,6 @@ touch $logFolder/`basename "$0"`.log
 log_msg()
 {
     echo `date "+%b %d %Y %T"` : "$1" >> $logFolder/`basename "$0"`.log
-}
-
-update_test_state()
-{
-    echo "${1}" > $logFolder/state.txt
 }
 
 remove_raid()

@@ -2,8 +2,9 @@
     <test>
         <TestName>NESTED-KVM-BASIC-VERIFICATION</TestName>
         <testScript>nested_kvm_basic_test.sh</testScript>
-        <files>.\Testscripts\Linux\azuremodules.sh,.\Testscripts\Linux\nested_kvm_basic_test.sh,.\TestScripts\Linux\utils.sh</files>
+        <files>.\Testscripts\Linux\azuremodules.sh,.\Testscripts\Linux\nested_kvm_utils.sh,.\Testscripts\Linux\nested_kvm_basic_test.sh,.\TestScripts\Linux\utils.sh</files>
         <setupType>SingleVM</setupType>
+        <Timeout>1800</Timeout>
         <OverrideVMSize>Standard_E4_v3</OverrideVMSize>
         <TestParameters>
             <!--The nested image should be qcow2 format, and accessible from a public URL-->
