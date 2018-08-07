@@ -238,6 +238,8 @@ bring_up_nic_with_private_ip() {
 run_ntttcp_on_client() {
     log_msg "Copy test scripts to nested VM"
     remote_copy_wrapper "root" $CLIENT_HOST_FWD_PORT "./perf_ntttcp.sh" "put"
+    remote_copy_wrapper "root" $CLIENT_HOST_FWD_PORT "./run-ntttcp-and-tcping.sh" "put"
+    remote_copy_wrapper "root" $CLIENT_HOST_FWD_PORT "./report-ntttcp-and-tcping.sh" "put"
     remote_exec_wrapper "root" $CLIENT_HOST_FWD_PORT "chmod a+x *.sh"
     log_msg "Start to run perf_ntttcp.sh on nested client VM"
     remote_exec_wrapper "root" $CLIENT_HOST_FWD_PORT "/root/perf_ntttcp.sh > ntttcpConsoleLogs"
