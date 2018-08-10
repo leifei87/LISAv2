@@ -430,16 +430,16 @@ try {
 	$ExitCode = 1
 } finally {
 	if ( $finalWorkingDirectory ) {
-		Write-Output "Copying test results back to original working directory: $originalWorkingDirectory."
+		Write-Output "Copying all files back to original working directory: $originalWorkingDirectory."
 		$tmpDest = '\\?\' + $originalWorkingDirectory
-		Copy-Item -Path "$finalWorkingDirectory\TestResults" -Destination $tmpDest -Force -Recurse | Out-Null
+		Copy-Item -Path "$finalWorkingDirectory\*" -Destination $tmpDest -Force -Recurse | Out-Null
 		Set-Location ..
 		Write-Output "Cleaning up $finalWorkingDirectory"
 		Remove-Item -Path $finalWorkingDirectory -Force -Recurse -ErrorAction SilentlyContinue
 		Write-Output "Setting workspace back to original location: $originalWorkingDirectory"
 		Set-Location $originalWorkingDirectory
 	}
-	Get-Variable -Exclude PWD,*Preference | Remove-Variable -Force -ErrorAction SilentlyContinue
+	Get-Variable -Exclude PWD,*Preference,ExitCode | Remove-Variable -Force -ErrorAction SilentlyContinue
 	LogMsg "LISAv2 exits with code: $ExitCode"
 
 	exit $ExitCode
