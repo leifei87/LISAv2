@@ -255,7 +255,7 @@ collect_logs() {
 }
 
 update_test_state $ICA_TESTRUNNING
-install_dependencies
+install_kvm_dependencies
 download_image_files -destination_image_name $CLIENT_IMAGE -source_image_url $NestedImageUrl
 cp $CLIENT_IMAGE $SERVER_IMAGE
 setup_bridge

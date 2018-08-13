@@ -25,7 +25,6 @@ log_msg()
 log_msg "Sleeping 10 seconds.."
 sleep 10
 
-#export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/share/oem/bin:/usr/share/oem/python/bin:/opt/bin
 CONSTANTS_FILE="$HOMEDIR/constants.sh"
 ICA_TESTRUNNING="TestRunning"      # The test is running
 ICA_TESTCOMPLETED="TestCompleted"  # The test completed successfully

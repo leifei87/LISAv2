@@ -29,7 +29,7 @@ update_test_state()
     echo "${1}" > state.txt
 }
 
-install_dependencies()
+install_kvm_dependencies()
 {
     update_repos
     install_package aria2

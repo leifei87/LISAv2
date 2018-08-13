@@ -18,7 +18,7 @@
 
 . ./nested_kvm_utils.sh
 . ./constants.sh
-#HOW TO PARSE THE ARGUMENTS.. SOURCE - http://stackoverflow.com/questions/4882349/parsing-shell-script-arguments
+
 while echo $1 | grep -q ^-; do
    declare $( echo $1 | sed 's/^-//' )=$2
    shift
@@ -187,7 +187,7 @@ if [[ $RaidOption == 'RAID in L1' ]]; then
     disks='md0'
 fi
 
-install_dependencies
+install_kvm_dependencies
 
 download_image_files -destination_image_name $ImageName -source_image_url $NestedImageUrl
 

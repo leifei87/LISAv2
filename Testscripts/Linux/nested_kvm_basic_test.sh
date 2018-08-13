@@ -45,7 +45,6 @@
 # Source constants file and initialize most common variables
 UtilsInit
 
-#HOW TO PARSE THE ARGUMENTS.. SOURCE - http://stackoverflow.com/questions/4882349/parsing-shell-script-arguments
 while echo $1 | grep -q ^-; do
    declare $( echo $1 | sed 's/^-//' )=$2
    shift
@@ -77,7 +76,7 @@ else
         echo "Using Log Folder $logFolder"
 fi
 
-prepare_nested_vm()
+test_nested_vm()
 {
     #Prepare command for start nested kvm
     cmd="qemu-system-x86_64 -smp 2 -m 2048 -hda $ImageName -display none -device e1000,netdev=user.0 -netdev user,id=user.0,hostfwd=tcp::$HostFwdPort-:22 -enable-kvm -daemonize"
@@ -87,11 +86,11 @@ prepare_nested_vm()
 
 
 
-install_dependencies
+install_kvm_dependencies
 download_image_files -destination_image_name $ImageName -source_image_url $NestedImageUrl
 
 #Prepare nested kvm
-prepare_nested_vm
+test_nested_vm
 stop_nested_vm
 SetTestStateCompleted
 

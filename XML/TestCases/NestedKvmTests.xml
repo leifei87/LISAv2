@@ -69,7 +69,6 @@
         <Category>Performance</Category>
         <Area>Nested</Area>
         <Tags>nested,kvm</Tags>
-        <TestID>Nested_003</TestID>
     </test>
     <test>
         <TestName>AZURE-NESTED-KVM-STORAGE-SINGLE-DISK</TestName>
@@ -100,7 +99,6 @@
         <Category>Performance</Category>
         <Area>Nested</Area>
         <Tags>nested,kvm</Tags>
-        <TestID>Nested_004</TestID>
     </test>
     <test>
         <TestName>HYPERV-NESTED-KVM-STORAGE-MULTIDISK</TestName>
@@ -132,7 +130,6 @@
         <Category>Performance</Category>
         <Area>Nested</Area>
         <Tags>nested,kvm</Tags>
-        <TestID>Nested_005</TestID>
     </test>
     <test>
         <TestName>AZURE-NESTED-KVM-STORAGE-MULTIDISK</TestName>
@@ -164,6 +161,5 @@
         <Category>Performance</Category>
         <Area>Nested</Area>
         <Tags>nested,kvm</Tags>
-        <TestID>Nested_006</TestID>
     </test>
 </TestCases>
