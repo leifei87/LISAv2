@@ -147,27 +147,6 @@ run_fio()
 	echo "===================================== Starting Run $(date +"%x %r %Z") script generated 2/9/2015 4:24:44 PM ================================" >> $LOGFILE
 
 	chmod 666 $LOGFILE
-	echo "Preparing Files: $FILEIO"
-	echo "Preparing Files: $FILEIO" >> $LOGFILE
-	log_msg "Preparing Files: $FILEIO"
-	# Remove any old files from prior runs (to be safe), then prepare a set of new files.
-	rm fiodata
-	echo "--- Kernel Version Information ---" >> $LOGFILE
-	uname -a >> $LOGFILE
-	cat /proc/version >> $LOGFILE
-	cat /etc/*-release >> $LOGFILE
-	echo "--- PCI Bus Information ---" >> $LOGFILE
-	lspci >> $LOGFILE
-	echo "--- Drive Mounting Information ---" >> $LOGFILE
-	mount >> $LOGFILE
-	echo "--- Disk Usage Before Generating New Files ---" >> $LOGFILE
-	df -h >> $LOGFILE
-	fio --cpuclock-test >> $LOGFILE
-	fio $FILEIO --readwrite=read --bs=1M --runtime=1 --iodepth=128 --numjobs=8 --name=prepare
-	echo "--- Disk Usage After Generating New Files ---" >> $LOGFILE
-	df -h >> $LOGFILE
-	echo "=== End Preparation  $(date +"%x %r %Z") ===" >> $LOGFILE
-	log_msg "Preparing Files: $FILEIO: Finished."
 	####################################
 	#Trigger run from here
 	for testmode in $modes; do
@@ -189,7 +168,6 @@ run_fio()
 				log_msg "Running ${testmode} test, ${io}K bs, ${Thread} threads ..."
 				jsonfilename="${JSONFILELOG}/fio-result-${testmode}-${io}K-${Thread}td.json"
 				fio $FILEIO --readwrite=$testmode --bs=${io}K --runtime=$ioruntime --iodepth=$Thread --numjobs=$numjobs --output-format=json --output=$jsonfilename --name="iteration"${iteration} >> $LOGFILE
-				#fio $FILEIO --readwrite=$testmode --bs=${io}K --runtime=$ioruntime --iodepth=$Thread --numjobs=$numjobs --name="iteration"${iteration} --group_reporting >> $LOGFILE
 				iostatPID=`ps -ef | awk '/iostat/ && !/awk/ { print $2 }'`
 				kill -9 $iostatPID
 				Thread=$(( Thread*2 ))		
@@ -200,7 +178,6 @@ run_fio()
 	done
 	####################################
 	echo "===================================== Completed Run $(date +"%x %r %Z") script generated 2/9/2015 4:24:44 PM ================================" >> $LOGFILE
-	rm fiodata
 
 	compressedFileName="${HOMEDIR}/FIOTest-$(date +"%m%d%Y-%H%M%S").tar.gz"
 	log_msg "INFO: Please wait...Compressing all results to ${compressedFileName}..."
@@ -210,23 +187,23 @@ run_fio()
 	update_test_state $ICA_TESTCOMPLETED
 }
 
-remove_raid()
+remove_raid_and_format()
 {
 	disks=$(ls -l /dev | grep sd[b-z]$ | awk '{print $10}')
 
 	log_msg "INFO: Check and remove RAID first"
 	mdvol=$(cat /proc/mdstat | grep md | awk -F: '{ print $1 }')
 	if [ -n "$mdvol" ]; then
-		echo "/dev/${mdvol} already exist...removing first"
+		log_msg "/dev/${mdvol} already exist...removing first"
 		umount /dev/${mdvol}
 		mdadm --stop /dev/${mdvol}
 		mdadm --remove /dev/${mdvol}
-		for disk in ${disks}
-		do
-			echo "formatting disk /dev/${disk}"
-			mkfs -t ext4 -F /dev/${disk}
-		done
 	fi
+	for disk in ${disks}
+	do
+		log_msg "formatting disk /dev/${disk}"
+		mkfs -t ext4 -F /dev/${disk}
+	done
 }
 
 create_raid0()
@@ -236,7 +213,7 @@ create_raid0()
 	count=0
 	for disk in ${disks}
 	do		
-		echo "formatting disk /dev/${disk}"
+		log_msg "Partition disk /dev/${disk}"
 		(echo d; echo n; echo p; echo 1; echo; echo; echo t; echo fd; echo w;) | fdisk /dev/${disk}
 		count=$(( $count + 1 ))
 		sleep 1
@@ -245,33 +222,17 @@ create_raid0()
 	sleep 1
 	yes | mdadm --create ${mdVolume} --level 0 --raid-devices ${count} /dev/sd[b-z][1-5]
 	sleep 1
-	time mkfs -t $1 -F ${mdVolume}
-	mkdir ${mountDir}
-	sleep 1
-	mount -o nobarrier ${mdVolume} ${mountDir}
 	if [ $? -ne 0 ]; then
 		update_test_state "$ICA_TESTFAILED"
-		log_msg "Error: unable to mount ${mdVolume} to ${mountDir}"
+		log_msg "Error: unable to create raid ${mdVolume}"
 		exit 1
 	else
-		log_msg "${mdVolume} mounted to ${mountDir} successfully."
+		log_msg "Raid ${mdVolume} create successfully."
 	fi
+	log_msg "formatting ${mdVolume}"
+	time mkfs -t $1 -F ${mdVolume}
 }
 
-mount_disk()
-{
-	time mkfs -t $1 -F /dev/${disk}
-	mkdir ${mountDir}
-	sleep 1
-	mount -o nobarrier /dev/${disk} ${mountDir}
-	if [ $? -ne 0 ]; then
-		update_test_state "$ICA_TESTFAILED"
-		log_msg "Error: Unable to mount ${disk} to ${mountDir}"
-		exit 1
-	else
-		log_msg "${disk} mounted to ${mountDir} successfully."
-	fi
-}
 ############################################################
 #	Main body
 ############################################################
@@ -288,40 +249,32 @@ else
 	mdVolume="/dev/md0"
 fi
 
-mountDir="/data"
 cd ${HOMEDIR}
 
 install_fio
-remove_raid
+remove_raid_and_format
 
-disks=($(ls -l /dev | grep sd[b-z]$ | awk '{print $10}'))
-
-#Skip to create RAID0 for single disk
-if [ ${#disks[@]} -eq 1 ]; then
-	disk=${disks[0]}
-	mount_disk ext4
+if [[ $RaidOption == 'RAID in L2' ]]; then
+	#For RAID in L2
+	create_raid0 ext4
+	devices=$mdVolume
 else
-	if [[ $RaidOption == 'RAID in L2' ]]; then
-		create_raid0 ext4
-	fi
-fi
-
-#Run test from here
-log_msg "*********INFO: Starting test execution*********"
-if [[ $RaidOption == 'No RAID' && ${#disks[@]} -gt 1 ]]; then
-	filename=''
+	#For RAID in L1, No RAID and single disk
+	devices=''
+	disks=($(ls -l /dev | grep sd[b-z]$ | awk '{print $10}'))
 	for disk in ${disks[@]}
 	do
-		if [[ $filename == '' ]]; then
-			filename="/dev/${disk}"
+		if [[ $devices == '' ]]; then
+			devices="/dev/${disk}"
 		else
-			filename="${filename}:/dev/${disk}"
+			devices="${devices}:/dev/${disk}"
 		fi
 	done
-	FILEIO="--size=${fileSize} --direct=1 --ioengine=libaio --filename=${filename} --overwrite=1  "
-else
-	FILEIO="--size=${fileSize} --direct=1 --ioengine=libaio --filename=fiodata --overwrite=1  "
-	cd ${mountDir}
 fi
+log_msg "*********INFO: Starting test execution*********"
+
+FILEIO="--size=${fileSize} --direct=1 --ioengine=libaio --filename=${devices} --overwrite=1"
+log_msg "FIO common parameters: ${FILEIO}"
 run_fio
+
 log_msg "*********INFO: Script execution reach END. Completed !!!*********"
