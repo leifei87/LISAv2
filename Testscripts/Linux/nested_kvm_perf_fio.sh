@@ -178,9 +178,8 @@ HOMEDIR=$HOME
 mv $HOMEDIR/FIOLog/ $HOMEDIR/FIOLog-$(date +"%m%d%Y-%H%M%S")/
 mkdir $HOMEDIR/FIOLog
 LOGDIR="${HOMEDIR}/FIOLog"
-DISTRO=`grep -ihs "buntu\|Suse\|Fedora\|Debian\|CentOS\|Red Hat Enterprise Linux" /etc/{issue,*release,*version}`
-if [[ $DISTRO =~ "SUSE Linux Enterprise Server 12" ]];
-then
+
+if [ $DISTRO_NAME == "sles" ] && [[ $DISTRO_VERSION =~ 12 ]]; then
 	mdVolume="/dev/md/mdauto0"
 else
 	mdVolume="/dev/md0"
@@ -189,18 +188,13 @@ fi
 cd ${HOMEDIR}
 
 install_fio
-if [ $? -ne 0 ]; then
-	echo "Failed to install fio"
-	update_test_state $ICA_TESTFAILED
-	exit 1
-fi
-
 remove_raid_and_format
 
 if [[ $RaidOption == 'RAID in L2' ]]; then
 	#For RAID in L2
 	create_raid0 ext4
 	devices=$mdVolume
+	disks='md0'
 else
 	#For RAID in L1, No RAID and single disk
 	devices=''
@@ -214,6 +208,13 @@ else
 		fi
 	done
 fi
+
+for disk in ${disks[@]}
+do
+	log_msg "set rq_affinity to 0 for device ${disk}"
+	echo 0 > /sys/block/${disk}/queue/rq_affinity
+done
+
 log_msg "*********INFO: Starting test execution*********"
 
 FILEIO="--size=${fileSize} --direct=1 --ioengine=libaio --filename=${devices} --overwrite=1"

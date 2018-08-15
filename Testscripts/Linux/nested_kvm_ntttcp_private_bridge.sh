@@ -159,6 +159,7 @@ prepare_client() {
 	start_nested_vm -user $NestedUser -passwd $NestedUserPassword -port $CLIENT_HOST_FWD_PORT $cmd
 	enable_root -user $NestedUser -passwd $NestedUserPassword -port $CLIENT_HOST_FWD_PORT
 	remote_copy_wrapper "root" $CLIENT_HOST_FWD_PORT "./enablePasswordLessRoot.sh" "put"
+	remote_copy_wrapper "root" $CLIENT_HOST_FWD_PORT "./utils.sh" "put"
 	remote_exec_wrapper "root" $CLIENT_HOST_FWD_PORT "chmod a+x *.sh"
 	remote_exec_wrapper "root" $CLIENT_HOST_FWD_PORT "rm -rf /root/sshFix"
 	remote_exec_wrapper "root" $CLIENT_HOST_FWD_PORT "/root/enablePasswordLessRoot.sh"
@@ -188,6 +189,7 @@ prepare_server() {
 	start_nested_vm -user $NestedUser -passwd $NestedUserPassword -port $SERVER_HOST_FWD_PORT $cmd
 	enable_root -user $NestedUser -passwd $NestedUserPassword -port $SERVER_HOST_FWD_PORT
 	remote_copy_wrapper "root" $SERVER_HOST_FWD_PORT "./enablePasswordLessRoot.sh" "put"
+	remote_copy_wrapper "root" $SERVER_HOST_FWD_PORT "./utils.sh" "put"
 	remote_exec_wrapper "root" $SERVER_HOST_FWD_PORT "chmod a+x *.sh"
 	remote_copy_wrapper "root" $SERVER_HOST_FWD_PORT "./sshFix.tar" "put"
 	check_exit_status "Copy key to the server VM" "log_msg"
@@ -245,7 +247,6 @@ run_ntttcp_on_client() {
 	remote_copy_wrapper "root" $CLIENT_HOST_FWD_PORT "./perf_ntttcp.sh" "put"
 	remote_copy_wrapper "root" $CLIENT_HOST_FWD_PORT "./run-ntttcp-and-tcping.sh" "put"
 	remote_copy_wrapper "root" $CLIENT_HOST_FWD_PORT "./report-ntttcp-and-tcping.sh" "put"
-	remote_copy_wrapper "root" $CLIENT_HOST_FWD_PORT "./utils.sh" "put"
 	remote_exec_wrapper "root" $CLIENT_HOST_FWD_PORT "chmod a+x *.sh"
 	log_msg "Start to run perf_ntttcp.sh on nested client VM"
 	remote_exec_wrapper "root" $CLIENT_HOST_FWD_PORT "/root/perf_ntttcp.sh > ntttcpConsoleLogs"
