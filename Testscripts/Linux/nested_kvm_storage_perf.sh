@@ -199,6 +199,12 @@ if [[ $RaidOption == 'RAID in L1' ]]; then
     disks='md0'
 fi
 
+for disk in ${disks[@]}
+do
+    log_msg "set rq_affinity to 0 for device ${disk}"
+    echo 0 > /sys/block/${disk}/queue/rq_affinity
+done
+
 install_kvm_dependencies
 
 download_image_files -destination_image_name $ImageName -source_image_url $NestedImageUrl
