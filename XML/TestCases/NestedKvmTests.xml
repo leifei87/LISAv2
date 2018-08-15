@@ -2,9 +2,8 @@
     <test>
         <TestName>NESTED-KVM-BASIC-VERIFICATION</TestName>
         <testScript>nested_kvm_basic_test.sh</testScript>
-        <files>.\Testscripts\Linux\azuremodules.sh,.\Testscripts\Linux\nested_kvm_utils.sh,.\Testscripts\Linux\nested_kvm_basic_test.sh,.\TestScripts\Linux\utils.sh</files>
+        <files>.\Testscripts\Linux\utils.sh,.\Testscripts\Linux\nested_kvm_utils.sh,.\Testscripts\Linux\nested_kvm_basic_test.sh</files>
         <setupType>SingleVM</setupType>
-        <Timeout>1800</Timeout>
         <OverrideVMSize>Standard_E4_v3</OverrideVMSize>
         <TestParameters>
             <!--The nested image should be qcow2 format, and accessible from a public URL-->
@@ -13,6 +12,7 @@
             <param>NestedUserPassword='NESTED_VM_PASSWORD'</param>
             <param>HostFwdPort=60022</param>
         </TestParameters>
+        <Timeout>720</Timeout>
         <Platform>Azure</Platform>
         <Category>Functional</Category>
         <Area>Nested</Area>
@@ -21,7 +21,7 @@
     <test>
         <TestName>NESTED-KVM-NTTTCP-PRIVATE-BRIDGE</TestName>
         <testScript>NESTED-KVM-NTTTCP-PRIVATE-BRIDGE.ps1</testScript>
-        <files>.\Testscripts\Linux\azuremodules.sh,.\Testscripts\Linux\nested_kvm_utils.sh,.\Testscripts\Linux\nested_kvm_ntttcp_private_bridge.sh,.\Testscripts\Linux\run-ntttcp-and-tcping.sh,.\Testscripts\Linux\report-ntttcp-and-tcping.sh,.\Testscripts\Linux\enableRoot.sh,.\Testscripts\Linux\enablePasswordLessRoot.sh,.\Testscripts\Linux\perf_ntttcp.sh</files>
+        <files>.\Testscripts\Linux\utils.sh,.\Testscripts\Linux\nested_kvm_utils.sh,.\Testscripts\Linux\nested_kvm_ntttcp_private_bridge.sh,.\Testscripts\Linux\run-ntttcp-and-tcping.sh,.\Testscripts\Linux\report-ntttcp-and-tcping.sh,.\Testscripts\Linux\enableRoot.sh,.\Testscripts\Linux\enablePasswordLessRoot.sh,.\Testscripts\Linux\perf_ntttcp.sh</files>
         <setupType>SingleVM</setupType>
         <OverrideVMSize>Standard_E16_v3</OverrideVMSize>
         <TestParameters>
@@ -43,7 +43,7 @@
     <test>
         <TestName>HYPERV-NESTED-KVM-STORAGE-SINGLE-DISK</TestName>
         <testScript>NESTED-KVM-STORAGE-PERF.ps1</testScript>
-        <files>.\Testscripts\Linux\azuremodules.sh,.\Testscripts\Linux\nested_kvm_utils.sh,.\Testscripts\Linux\nested_kvm_storage_perf.sh,.\Testscripts\Linux\nested_kvm_perf_fio.sh,.\Testscripts\Linux\enableRoot.sh,.\Testscripts\Linux\enablePasswordLessRoot.sh</files>
+        <files>.\Testscripts\Linux\utils.sh,.\Testscripts\Linux\nested_kvm_utils.sh,.\Testscripts\Linux\nested_kvm_storage_perf.sh,.\Testscripts\Linux\nested_kvm_perf_fio.sh,.\Testscripts\Linux\enableRoot.sh,.\Testscripts\Linux\enablePasswordLessRoot.sh</files>
         <setupType>HYPERVDISK1</setupType>
         <OverrideVMSize></OverrideVMSize>
         <TestParameters>
@@ -73,7 +73,7 @@
     <test>
         <TestName>AZURE-NESTED-KVM-STORAGE-SINGLE-DISK</TestName>
         <testScript>NESTED-KVM-STORAGE-PERF.ps1</testScript>
-        <files>.\Testscripts\Linux\azuremodules.sh,.\Testscripts\Linux\nested_kvm_utils.sh,.\Testscripts\Linux\nested_kvm_storage_perf.sh,.\Testscripts\Linux\nested_kvm_perf_fio.sh,.\Testscripts\Linux\enableRoot.sh,.\Testscripts\Linux\enablePasswordLessRoot.sh</files>
+        <files>.\Testscripts\Linux\utils.sh,.\Testscripts\Linux\nested_kvm_utils.sh,.\Testscripts\Linux\nested_kvm_storage_perf.sh,.\Testscripts\Linux\nested_kvm_perf_fio.sh,.\Testscripts\Linux\enableRoot.sh,.\Testscripts\Linux\enablePasswordLessRoot.sh</files>
         <setupType>D16SV3DISK1</setupType>
         <OverrideVMSize></OverrideVMSize>
         <TestParameters>
@@ -103,7 +103,7 @@
     <test>
         <TestName>HYPERV-NESTED-KVM-STORAGE-MULTIDISK</TestName>
         <testScript>NESTED-KVM-STORAGE-PERF.ps1</testScript>
-        <files>.\Testscripts\Linux\azuremodules.sh,.\Testscripts\Linux\nested_kvm_utils.sh,.\Testscripts\Linux\nested_kvm_storage_perf.sh,.\Testscripts\Linux\nested_kvm_perf_fio.sh,.\Testscripts\Linux\enableRoot.sh,.\Testscripts\Linux\enablePasswordLessRoot.sh</files>
+        <files>.\Testscripts\Linux\utils.sh,.\Testscripts\Linux\nested_kvm_utils.sh,.\Testscripts\Linux\nested_kvm_storage_perf.sh,.\Testscripts\Linux\nested_kvm_perf_fio.sh,.\Testscripts\Linux\enableRoot.sh,.\Testscripts\Linux\enablePasswordLessRoot.sh</files>
         <setupType>HYPERVDISK4</setupType>
         <OverrideVMSize></OverrideVMSize>
         <TestParameters>
@@ -134,7 +134,7 @@
     <test>
         <TestName>AZURE-NESTED-KVM-STORAGE-MULTIDISK</TestName>
         <testScript>NESTED-KVM-STORAGE-PERF.ps1</testScript>
-        <files>.\Testscripts\Linux\azuremodules.sh,.\Testscripts\Linux\nested_kvm_utils.sh,.\Testscripts\Linux\nested_kvm_storage_perf.sh,.\Testscripts\Linux\nested_kvm_perf_fio.sh,.\Testscripts\Linux\enableRoot.sh,.\Testscripts\Linux\enablePasswordLessRoot.sh</files>
+        <files>.\Testscripts\Linux\utils.sh,.\Testscripts\Linux\nested_kvm_utils.sh,.\Testscripts\Linux\nested_kvm_storage_perf.sh,.\Testscripts\Linux\nested_kvm_perf_fio.sh,.\Testscripts\Linux\enableRoot.sh,.\Testscripts\Linux\enablePasswordLessRoot.sh</files>
         <setupType>D16SV3DISK6</setupType>
         <OverrideVMSize></OverrideVMSize>
         <TestParameters>

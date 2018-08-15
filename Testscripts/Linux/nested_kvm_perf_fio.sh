@@ -26,94 +26,31 @@ log_msg "Sleeping 10 seconds.."
 sleep 10
 
 CONSTANTS_FILE="$HOMEDIR/constants.sh"
+UTIL_FILE="$HOMEDIR/utils.sh"
 ICA_TESTRUNNING="TestRunning"      # The test is running
 ICA_TESTCOMPLETED="TestCompleted"  # The test completed successfully
 ICA_TESTABORTED="TestAborted"      # Error during the setup of the test
 ICA_TESTFAILED="TestFailed"        # Error occurred during the test
 touch ./fioTest.log
 
-if [ -e ${CONSTANTS_FILE} ]; then
-	. ${CONSTANTS_FILE}
-else
+. ${CONSTANTS_FILE} || {
 	errMsg="Error: missing ${CONSTANTS_FILE} file"
 	log_msg "${errMsg}"
 	update_test_state $ICA_TESTABORTED
 	exit 10
-fi
+}
+. ${UTIL_FILE} || {
+	errMsg="Error: missing ${UTIL_FILE} file"
+	log_msg "${errMsg}"
+	update_test_state $ICA_TESTABORTED
+	exit 10
+}
 
 
 update_test_state()
 {
 	echo "${1}" > $HOMEDIR/state.txt
 }
-
-install_fio() {
-	DISTRO=`grep -ihs "buntu\|Suse\|Fedora\|Debian\|CentOS\|Red Hat Enterprise Linux\|clear-linux-os" /etc/{issue,*release,*version} /usr/lib/os-release`
-
-	if [[ $DISTRO =~ "Ubuntu" ]] || [[ $DISTRO =~ "Debian" ]];
-	then
-		log_msg "Detected UBUNTU/Debian. Installing required packages"
-		until dpkg --force-all --configure -a; sleep 10; do echo 'Trying again...'; done
-		apt-get update
-		apt-get install -y pciutils gawk mdadm
-		apt-get install -y wget sysstat blktrace bc fio
-		if [ $? -ne 0 ]; then
-			log_msg "Error: Unable to install fio"
-			update_test_state $ICA_TESTABORTED
-			exit 1
-		fi
-		mount -t debugfs none /sys/kernel/debug
-						
-	elif [[ $DISTRO =~ "Red Hat Enterprise Linux Server release 6" ]];
-	then
-		log_msg "Detected RHEL 6.x; Installing required packages"
-		rpm -ivh https://dl.fedoraproject.org/pub/epel/epel-release-latest-6.noarch.rpm
-		yum -y --nogpgcheck install wget sysstat mdadm blktrace libaio fio
-		mount -t debugfs none /sys/kernel/debug
-
-	elif [[ $DISTRO =~ "Red Hat Enterprise Linux Server release 7" ]];
-	then
-		log_msg "Detected RHEL 7.x; Installing required packages"
-		rpm -ivh https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
-		yum -y --nogpgcheck install wget sysstat mdadm blktrace libaio fio
-		mount -t debugfs none /sys/kernel/debug
-			
-	elif [[ $DISTRO =~ "CentOS Linux release 6" ]] || [[ $DISTRO =~ "CentOS release 6" ]];
-	then
-		log_msg "Detected CentOS 6.x; Installing required packages"
-		rpm -ivh https://dl.fedoraproject.org/pub/epel/epel-release-latest-6.noarch.rpm
-		yum -y --nogpgcheck install wget sysstat mdadm blktrace libaio fio
-		mount -t debugfs none /sys/kernel/debug
-			
-	elif [[ $DISTRO =~ "CentOS Linux release 7" ]];
-	then
-		log_msg "Detected CentOS 7.x; Installing required packages"
-		rpm -ivh https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
-		yum -y --nogpgcheck install wget sysstat mdadm blktrace libaio fio
-		mount -t debugfs none /sys/kernel/debug
-
-	elif [[ $DISTRO =~ "SUSE Linux Enterprise Server 12" ]];
-	then
-		log_msg "Detected SLES12. Installing required packages"
-		zypper addrepo http://download.opensuse.org/repositories/benchmark/SLE_12_SP3_Backports/benchmark.repo
-		zypper --no-gpg-checks --non-interactive --gpg-auto-import-keys refresh
-		zypper --no-gpg-checks --non-interactive --gpg-auto-import-keys remove gettext-runtime-mini-0.19.2-1.103.x86_64
-		zypper --no-gpg-checks --non-interactive --gpg-auto-import-keys install sysstat
-		zypper --no-gpg-checks --non-interactive --gpg-auto-import-keys install grub2
-		zypper --no-gpg-checks --non-interactive --gpg-auto-import-keys install wget mdadm blktrace libaio1 fio
-	elif [[ $DISTRO =~ "clear-linux-os" ]];
-	then
-		log_msg "Detected Clear Linux OS. Installing required packages"
-		swupd bundle-add dev-utils-dev sysadmin-basic performance-tools os-testsuite-phoronix network-basic openssh-server dev-utils os-core os-core-dev
-
-	else
-			log_msg "Unknown Distro"
-			update_test_state $ICA_TESTABORTED
-			UpdateSummary "Unknown Distro, test aborted"
-			return 1
-	fi
-}
-
 run_fio()
 {
 	update_test_state $ICA_TESTRUNNING
@@ -252,6 +189,12 @@ fi
 cd ${HOMEDIR}
 
 install_fio
+if [ $? -ne 0 ]; then
+	echo "Failed to install fio"
+	update_test_state $ICA_TESTFAILED
+	exit 1
+fi
+
 remove_raid_and_format
 
 if [[ $RaidOption == 'RAID in L2' ]]; then

@@ -14,10 +14,14 @@
 # Description:
 #   common functions of nested kvm cases
 # Dependence:
-#   azuremodules.sh
+#   utils.sh
 #######################################################################
 
-. ./azuremodules.sh
+. utils.sh || {
+    echo "ERROR: unable to source utils.sh!"
+    echo "TestAborted" > state.txt
+    exit 2
+}
 
 ICA_TESTRUNNING="TestRunning"      # The test is running
 ICA_TESTCOMPLETED="TestCompleted"  # The test completed successfully
@@ -43,8 +47,7 @@ install_kvm_dependencies()
     else
         echo "Install KVM succeed"
     fi
-    distro=$(detect_linux_ditribution)
-    if [ $distro == "centos" ] || [ $distro == "rhel" ] || [ $distro == "oracle" ]; then
+    if [ $DISTRO_NAME == "centos" ] || [ $DISTRO_NAME == "rhel" ] || [ $DISTRO_NAME == "oracle" ]; then
         echo "Install epel repository"
         install_epel
         echo "Install qemu-system-x86"

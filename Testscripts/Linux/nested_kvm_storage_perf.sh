@@ -16,9 +16,6 @@
 #
 #######################################################################
 
-. ./nested_kvm_utils.sh
-. ./constants.sh
-
 while echo $1 | grep -q ^-; do
    declare $( echo $1 | sed 's/^-//' )=$2
    shift
@@ -28,7 +25,22 @@ done
 #
 # Constants/Globals
 #
+UTIL_FILE="./nested_kvm_utils.sh"
+CONSTANTS_FILE="./constants.sh"
 ImageName="nested.qcow2"
+
+. ${CONSTANTS_FILE} || {
+    errMsg="Error: missing ${CONSTANTS_FILE} file"
+    log_msg "${errMsg}"
+    update_test_state $ICA_TESTABORTED
+    exit 10
+}
+. ${UTIL_FILE} || {
+    errMsg="Error: missing ${UTIL_FILE} file"
+    log_msg "${errMsg}"
+    update_test_state $ICA_TESTABORTED
+    exit 10
+}
 
 if [ -z "$NestedImageUrl" ]; then
     echo "Please mention -NestedImageUrl next"
@@ -138,7 +150,7 @@ prepare_nested_vm()
 run_fio()
 {
     log_msg "Copy necessary scripts to nested VM"
-    remote_copy -host localhost -user root -passwd $NestedUserPassword -port $HostFwdPort -filename ./azuremodules.sh -remote_path /root -cmd put
+    remote_copy -host localhost -user root -passwd $NestedUserPassword -port $HostFwdPort -filename ./utils.sh -remote_path /root -cmd put
     remote_copy -host localhost -user root -passwd $NestedUserPassword -port $HostFwdPort -filename ./StartFioTest.sh -remote_path /root -cmd put
     remote_copy -host localhost -user root -passwd $NestedUserPassword -port $HostFwdPort -filename ./constants.sh -remote_path /root -cmd put
     remote_copy -host localhost -user root -passwd $NestedUserPassword -port $HostFwdPort -filename ./ParseFioTestLogs.sh -remote_path /root -cmd put
