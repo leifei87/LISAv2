@@ -63,7 +63,7 @@
             <param>numjobs=1</param>
             <param>ioruntime=300</param>
             <param>maxIO=4</param>
-            <param>fileSize=1G</param>
+            <param>fileSize=8G</param>
         </TestParameters>
         <Platform>HyperV</Platform>
         <Category>Performance</Category>
@@ -93,7 +93,7 @@
             <param>numjobs=1</param>
             <param>ioruntime=300</param>
             <param>maxIO=4</param>
-            <param>fileSize=1G</param>
+            <param>fileSize=8G</param>
         </TestParameters>
         <Platform>Azure</Platform>
         <Category>Performance</Category>
@@ -124,7 +124,7 @@
             <param>numjobs=1</param>
             <param>ioruntime=300</param>
             <param>maxIO=4</param>
-            <param>fileSize=1G</param>
+            <param>fileSize=8G</param>
         </TestParameters>
         <Platform>HyperV</Platform>
         <Category>Performance</Category>
@@ -155,7 +155,7 @@
             <param>numjobs=1</param>
             <param>ioruntime=300</param>
             <param>maxIO=4</param>
-            <param>fileSize=1G</param>
+            <param>fileSize=8G</param>
         </TestParameters>
         <Platform>Azure</Platform>
         <Category>Performance</Category>
