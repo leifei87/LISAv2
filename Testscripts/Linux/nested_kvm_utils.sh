@@ -13,7 +13,7 @@
 #
 # Description:
 #   common functions of nested kvm cases
-# Dependence:
+# Dependency:
 #   utils.sh
 #######################################################################
 
