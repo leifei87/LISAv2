@@ -1,13 +1,37 @@
-# Get the parameter values
-$HoursFromLastCheck = $env:CheckTimeInterval
-$ContainerStr = $env:Containers
+##############################################################################################
+# UpdateNestedTestParameters.ps1
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the Apache License.
+<#
+.SYNOPSIS
+    Check new vhds from specific vendor's storage containers
+
+.PARAMETER
+    <Parameters>
+
+.INPUTS
+
+
+.NOTES
+    Creation Date:  22th Oct 2018
+
+.EXAMPLE
+
+#>
+###############################################################################################
+
+param(
+    [string]$ContainerStr= "",
+    [string]$CheckTimeInterval= ""
+)
+
 $Containers = $ContainerStr.Split(';')
 
 $xmlFile = "blobsXml.xml"
 $configFile = "config.xml"
 $newVhdsFile = "NewVHDs.xml"
 $vhdCount = 0
-$lastCheckTime = [DateTime]::Now.AddHours(-$HoursFromLastCheck)
+$lastCheckTime = [DateTime]::Now.AddHours(-$CheckTimeInterval)
 
 if (Test-Path $newVhdsFile)
 {
