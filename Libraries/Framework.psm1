@@ -52,7 +52,7 @@ function GetTestSummary($testCycle, [DateTime] $StartTime, [string] $xmlFilename
     {
         $str += "<br />VHD under test " + $BaseOSVHD
     }
-    if ( $ARMImage )
+    if ( $ARMImage.Publisher )
     {
         $str += "<br />ARM Image under test " + "$($ARMImage.Publisher) : $($ARMImage.Offer) : $($ARMImage.Sku) : $($ARMImage.Version)"
     }
@@ -67,39 +67,76 @@ function GetTestSummary($testCycle, [DateTime] $StartTime, [string] $xmlFilename
     $str += "<br />Logs can be found at $LogDir" + "<br /><br />"
     $str += "</pre>"
     $plainTextSummary = $str
-    $strHtml =  "<style type='text/css'>" +
-			".TFtable{width:1024px; border-collapse:collapse; }" +
-			".TFtable td{ padding:7px; border:#4e95f4 1px solid;}" +
-			".TFtable tr{ background: #b8d1f3;}" +
-			".TFtable tr:nth-child(odd){ background: #dbe1e9;}" +
-			".TFtable tr:nth-child(even){background: #ffffff;}</style>" +
-            "<Html><head><title>Test Results Summary</title></head>" +
-            "<body style = 'font-family:sans-serif;font-size:13px;color:#000000;margin:0px;padding:30px'>" +
-            "<br/><h1 style='background-color:lightblue;width:1024'>Test Results Summary</h1>"
-    $strHtml += "<h2 style='background-color:lightblue;width:1024'>ICA test run on - " + $startTime + "</h2><span style='font-size: medium'>"
+    $strHtml =  '
+<STYLE>
+BODY, TABLE, TD, TH, P {
+  font-family:Verdana,Helvetica,sans serif;
+  font-size:11px;
+  color:black;
+}
+TD.bg1 { color:white; background-color:#0000C0; font-size:180% }
+TD.bg2 { color:black; font-size:130% }
+TD.bg3 { color:black; font-size:110% }
+.TFtable{width:1024px; border-collapse:collapse; }
+.TFtable td{ padding:7px; border:#4e95f4 1px solid;}
+.TFtable tr{ background: #b8d1f3;}
+.TFtable tr:nth-child(odd){ background: #dbe1e9;}
+.TFtable tr:nth-child(even){background: #ffffff;}
+</STYLE>
+<table>
+<TR><TD class="bg1" colspan="2"><B>Test Results Summary</B></TD></TR>
+</table>
+<BR/>
+'
+
     if ( $BaseOsImage )
     {
-        $strHtml += '<p>Image under test - <span style="font-family:courier new,courier,monospace;">' + "$BaseOsImage</span></p>"
+        $strHtml += "
+<table>
+<TR><TD class=`"bg2`" colspan=`"2`"><B>ICA test run on - 10/25/2018 08:05:18</B></TD></TR>
+<TR><TD class=`"bg3`" colspan=`"2`">Build URL: <A href=`"${BUILD_URL}`">${BUILD_URL}</A></TD></TR>
+<TR><TD class=`"bg3`" colspan=`"2`">Image under test - $BaseOsImage</TD></TR>
+</table>
+<BR/>
+"
     }
     if ( $BaseOSVHD )
     {
-        $strHtml += '<p>VHD under test - <span style="font-family:courier new,courier,monospace;">' + "$BaseOsVHD</span></p>"
+        $strHtml += "
+<table>
+<TR><TD class=`"bg2`" colspan=`"2`"><B>ICA test run on - $startTime</B></TD></TR>
+<TR><TD class=`"bg3`" colspan=`"2`">Build URL: <A href=`"${BUILD_URL}`">${BUILD_URL}</A></TD></TR>
+<TR><TD class=`"bg3`" colspan=`"2`">VHD under test - $BaseOsVHD</TD></TR>
+</table>
+<BR/>
+"
     }
-    if ( $ARMImage )
+    if ( $ARMImage.Publisher )
     {
-        $strHtml += '<p>ARM Image under test - <span style="font-family:courier new,courier,monospace;">' + "$($ARMImage.Publisher) : $($ARMImage.Offer) : $($ARMImage.Sku) : $($ARMImage.Version)</span></p>"
+        $strHtml += "
+<table>
+<TR><TD class=`"bg2`" colspan=`"2`"><B>ICA test run on - 10/25/2018 08:05:18</B></TD></TR>
+<TR><TD class=`"bg3`" colspan=`"2`">Build URL: <A href=`"${BUILD_URL}`">${BUILD_URL}</A></TD></TR>
+<TR><TD class=`"bg3`" colspan=`"2`">ARM Image under test - $($ARMImage.Publisher) : $($ARMImage.Offer) : $($ARMImage.Sku) : $($ARMImage.Version)</TD></TR>
+</table>
+<BR/>
+"
     }
-
-    $strHtml += '<p>Total Executed TestCases - <strong><span style="font-size:16px;">' + "$($testSuiteResultDetails.totalTc)" + '</span></strong><br />' + '[&nbsp;<span style="font-size:16px;"><span style="color:#008000;"><strong>' +  $testSuiteResultDetails.totalPassTc + ' </strong></span></span> - PASS, <span style="font-size:16px;"><span style="color:#ff0000;"><strong>' + "$($testSuiteResultDetails.totalFailTc)" + '</strong></span></span>- FAIL, <span style="font-size:16px;"><span style="color:#ff0000;"><strong><span style="background-color:#ffff00;">' + "$($testSuiteResultDetails.totalAbortedTc)" +'</span></strong></span></span> - ABORTED ]</p>'
-    $strHtml += "<br /><br/>Total Execution Time(dd:hh:mm) " + $testSuiteRunDuration.ToString()
-    $strHtml += "<br /><br/>XML file: $xmlFilename<br /><br /></span>"
+	$strHtml += "
+<table>
+<TR><TD class=`"bg3`" colspan=`"2`">Total Executed TestCases - $($testSuiteResultDetails.totalTc)</TD></TR>
+<TR><TD class=`"bg3`" colspan=`"2`">[&nbsp;<span><span style=`"color:#008000;`"><strong>$($testSuiteResultDetails.totalPassTc)</strong></span></span> - PASS, <span ><span style=`"color:#ff0000;`"><strong>$($testSuiteResultDetails.totalFailTc)</strong></span></span> - FAIL, <span><span style=`"color:#ff0000;`"><strong><span style=`"background-color:#ffff00;`">$($testSuiteResultDetails.totalAbortedTc)</span></strong></span></span> - ABORTED ]</TD></TR>
+<TR><TD class=`"bg3`" colspan=`"2`">Total Execution Time(dd:hh:mm) $($testSuiteRunDuration.ToString())</TD></TR>
+</table>
+<BR/>
+"
 
     # Add information about the host running ICA to the e-mail summary
-    $strHtml += "<table border='0' class='TFtable'>"
-    $strHtml += $testCycle.htmlSummary
-    $strHtml += "</table>"
-    
-    $strHtml += "</body></Html>"
+    $strHtml += "
+<table border='0' class='TFtable'>
+$($testCycle.htmlSummary)
+</table>
+"
 
     if (-not (Test-Path(".\temp\CI"))) {
         mkdir ".\temp\CI" | Out-Null 
