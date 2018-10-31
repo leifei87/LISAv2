@@ -11,7 +11,7 @@
         <Tags>bvt,boot</Tags>
         <TestID>AzureBVT_001</TestID>
     </test>
-    <test>
+    <!--<test>
         <testName>BVT-IS-ROOT-PASSWORD-DELETED</testName>
         <testScript>BVT-IS-ROOT-PASSWORD-DELETED.py</testScript>
         <PowershellScript>BVT-IS-ROOT-PASSWORD-DELETED.ps1</PowershellScript>
@@ -23,7 +23,7 @@
         <Tags>bvt</Tags>
         <TestID>AzureBVT_003</TestID>
     </test>
-    <!--<test>
+    <test>
         <testName>BVT-ROOT-DEVICE-TIMEOUT-CHECK</testName>
         <testScript>BVT-ROOT-DEVICE-TIMEOUT-CHECK.py</testScript>
         <PowershellScript>BVT-ROOT-DEVICE-TIMEOUT-CHECK.ps1</PowershellScript>

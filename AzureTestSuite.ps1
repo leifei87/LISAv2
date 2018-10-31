@@ -263,7 +263,7 @@ Function RunTestsOnCycle ($cycleName , $xmlConfig, $Distro, $TestIterations )
 							$testSuiteResultDetails.totalPassTc = $testSuiteResultDetails.totalPassTc +1
 							$testResultRow = "<span style='color:green;font-weight:bolder'>PASS</span>"
 							FinishLogTestCase $testcase
-							$testCycle.htmlSummary += "<tr><td><font size=`"3`">$executionCount</font></td><td>$($currentTestData.testName)</td><td>$testRunDuration min</td><td>$testResultRow</td></tr>"
+							$testCycle.htmlSummary += "<tr><td>$executionCount</td><td>$($currentTestData.testName)</td><td>$testRunDuration min</td><td>$testResultRow</td></tr>"
 						}
 						elseif($testResult -imatch "FAIL")
 						{
@@ -271,7 +271,7 @@ Function RunTestsOnCycle ($cycleName , $xmlConfig, $Distro, $TestIterations )
 							$testResultRow = "<span style='color:red;font-weight:bolder'>FAIL</span>"
 							$caseLog = Get-Content -Raw $TestCaseLogFile
 							FinishLogTestCase $testcase "FAIL" "$($test.Name) failed." $caseLog
-							$testCycle.htmlSummary += "<tr><td><font size=`"3`">$executionCount</font></td><td>$($currentTestData.testName)$(AddReproVMDetailsToHtmlReport)</td><td>$testRunDuration min</td><td>$testResultRow</td></tr>"
+							$testCycle.htmlSummary += "<tr><td>$executionCount</td><td>$($currentTestData.testName)$(AddReproVMDetailsToHtmlReport)</td><td>$testRunDuration min</td><td>$testResultRow</td></tr>"
 						}
 						elseif($testResult -imatch "ABORTED")
 						{
@@ -279,7 +279,7 @@ Function RunTestsOnCycle ($cycleName , $xmlConfig, $Distro, $TestIterations )
 							$testResultRow = "<span style='background-color:yellow;font-weight:bolder'>ABORT</span>"
 							$caseLog = Get-Content -Raw $TestCaseLogFile
 							FinishLogTestCase $testcase "ERROR" "$($test.Name) is aborted." $caseLog
-							$testCycle.htmlSummary += "<tr><td><font size=`"3`">$executionCount</font></td><td>$($currentTestData.testName)$(AddReproVMDetailsToHtmlReport)</td><td>$testRunDuration min</td><td>$testResultRow</td></tr>"
+							$testCycle.htmlSummary += "<tr><td>$executionCount</td><td>$($currentTestData.testName)$(AddReproVMDetailsToHtmlReport)</td><td>$testRunDuration min</td><td>$testResultRow</td></tr>"
 						}
 						else
 						{
@@ -288,7 +288,7 @@ Function RunTestsOnCycle ($cycleName , $xmlConfig, $Distro, $TestIterations )
 							$caseLog = Get-Content -Raw $TestCaseLogFile
 							$testResultRow = "<span style='background-color:yellow;font-weight:bolder'>ABORT</span>"
 							FinishLogTestCase $testcase "ERROR" "$($test.Name) is aborted." $caseLog
-							$testCycle.htmlSummary += "<tr><td><font size=`"3`">$executionCount</font></td><td>$tempHtmlText$(AddReproVMDetailsToHtmlReport)</td><td>$testRunDuration min</td><td>$testResultRow</td></tr>"
+							$testCycle.htmlSummary += "<tr><td>$executionCount</td><td>$tempHtmlText$(AddReproVMDetailsToHtmlReport)</td><td>$testRunDuration min</td><td>$testResultRow</td></tr>"
 						}
 					}
 					else
