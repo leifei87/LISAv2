@@ -93,7 +93,7 @@ TD.bg3 { color:black; font-size:110% }
     {
         $strHtml += "
 <table>
-<TR><TD class=`"bg2`" colspan=`"2`"><B>ICA test run on - 10/25/2018 08:05:18</B></TD></TR>
+<TR><TD class=`"bg2`" colspan=`"2`"><B>ICA test run on - $startTime</B></TD></TR>
 <TR><TD class=`"bg3`" colspan=`"2`">Build URL: <A href=`"${BUILD_URL}`">${BUILD_URL}</A></TD></TR>
 <TR><TD class=`"bg3`" colspan=`"2`">Image under test - $BaseOsImage</TD></TR>
 </table>
@@ -115,7 +115,7 @@ TD.bg3 { color:black; font-size:110% }
     {
         $strHtml += "
 <table>
-<TR><TD class=`"bg2`" colspan=`"2`"><B>ICA test run on - 10/25/2018 08:05:18</B></TD></TR>
+<TR><TD class=`"bg2`" colspan=`"2`"><B>ICA test run on - $startTime</B></TD></TR>
 <TR><TD class=`"bg3`" colspan=`"2`">Build URL: <A href=`"${BUILD_URL}`">${BUILD_URL}</A></TD></TR>
 <TR><TD class=`"bg3`" colspan=`"2`">ARM Image under test - $($ARMImage.Publisher) : $($ARMImage.Offer) : $($ARMImage.Sku) : $($ARMImage.Version)</TD></TR>
 </table>
